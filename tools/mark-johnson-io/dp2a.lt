@@ -1,0 +1,12 @@
+S --> L R
+L --> XL
+L --> L Ml
+Ml --> R XL
+Ml --> M Ml
+R --> XR
+R --> Mr R
+Mr --> XR L
+Mr --> Mr M
+M --> R L
+XL --> xl
+XR --> xr
