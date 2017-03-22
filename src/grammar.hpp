@@ -20,15 +20,15 @@ public:
 
 	map<string, bool> isUnary;
 
-	map<string, UnaryRule> indexNonTerminal;
-	multimap<string, UnaryRule> indexUnary;
+	map<string, UnaryRule> indexTerminal;
+	//multimap<string, UnaryRule> indexUnary;
 	multimap<string, BinaryRule>indexNonTerminalParent, indexNonTerminalLeft, indexNonTerminalRight;
 	multimap<pair<string, string>, BinaryRule> indexNonTerminalChildren;
 
 	void addUnary(string nonTerminal, string terminal, double probability){
 		unaryRules.push_back(UnaryRule(nonTerminal, terminal, probability));
 		isUnary.insert(pair<string, bool>(nonTerminal, true));
-		indexNonTerminal.insert(pair<string, UnaryRule>(nonTerminal, unaryRules.back()));
+		indexTerminal.insert(pair<string, UnaryRule>(terminal, unaryRules.back()));
 	}
 	void addBinary(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, double probability){
 		binaryRules.push_back(BinaryRule(nonTerminalParent, nonTerminalLeft, nonTerminalRight, probability));

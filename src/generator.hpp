@@ -17,7 +17,8 @@ using namespace std;
 class Generator{
 private:
 	int numSentences;
-	void generate(CNF &cnf, ParseTreeNode *node){
+	CNF cnf;
+	void generate(ParseTreeNode *node){
 		if (cnf.isUnary[node->nonTerminal]){
 			UnaryRule rule = cnf.randomizeUnaryRule(node->nonTerminal);
 			node->insertTerminal(rule.terminal);
@@ -25,20 +26,21 @@ private:
 		else{
 			BinaryRule rule = cnf.randomizeBinaryRule(node->nonTerminal);
 			node->insertChildren(rule.nonTerminalLeft, rule.nonTerminalRight);
-			generate(cnf, node->left);
-			generate(cnf, node->right);
+			generate(node->left);
+			generate(node->right);
 		}
 	}
 public:
-	Generator(int numSentences){
+	Generator(int numSentences, CNF &cnf){
 		this->numSentences = numSentences;
+		this->cnf = cnf;
 	}
 
-	void generateSentences(CNF &cnf, ofstream &treeOut, ofstream &evalbOut){
+	void generateSentences(ofstream &treeOut, ofstream &evalbOut){
 		srand((unsigned)time(NULL));
 		for (int i = 1; i <= numSentences; i++){
 			ParseTree *parseTree = new ParseTree("S");
-			generate(cnf, parseTree->root);
+			generate(parseTree->root);
 			parseTree->reassignIndex();
 			parseTree->save(treeOut);		
 			parseTree->saveToEvalbFormat(evalbOut);

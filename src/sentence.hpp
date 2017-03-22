@@ -13,20 +13,12 @@ using namespace std;
 
 const int MAXN = 100;
 
-class Table{
-public:
-	double probability;
-	string symbol;
-	Table(){probability = 0; symbol = "";}
-};
-
 class Sentence{
 public:
-	ParseTree *parseTree;
 	CNF cnf;
+	ParseTree *parseTree;
 	vector<string> words;
-	Table table[MAXN][MAXN];
-//	vector<vector<map<string, double> > > theta, alpha, beta;
+	map<string, double> table[MAXN][MAXN];
 
 	Sentence(ifstream &treeIn, ifstream &grammarIn){
 		parseTree = new ParseTree;
@@ -42,26 +34,37 @@ public:
 	void calculateInside(){;}
 	void calculateOutside(){;}
 	void CYK(){
-		memset(table, 0, sizeof(table));
-
+		for (int i = 0; i < MAXN; i++)
+			for (int j = 0; j < MAXN; j++)
+				table[i][j].clear();
+		//memset(table, 0, sizeof(table));
 		for (int j = 0; j < words.size(); j++){
-					cout<<"!!!"<<endl;
-					cout<<cnf.indexWord[words[j]].word<<endl;
-			table[j][j].symbol = cnf.indexWord[words[j]].word;
-			table[j][j].probability = cnf.indexWord[words[j]].probability;
+			table[j][j][cnf.indexTerminal[words[j]].nonTerminal] = cnf.indexTerminal[words[j]].probability;
 			for (int i = j - 1; i >= 0; i--)
 				for (int k = i; k <= j - 1; k++){
-					multimap<pair<string, string>, NonTerminalRule>::iterator iter;
-					pair<string, string> nonTerminalChildren = pair<string, string>(table[i][k].symbol, table[k + 1][j].symbol);
-					for (iter = cnf.indexNonTerminalChildren.begin(); iter != cnf.indexNonTerminalChildren.end(); iter++)
-						if (table[i][j].probability < iter->second.probability * table[i][k].probability * table[k + 1][j].probability){
-							table[i][j].probability = iter->second.probability * table[i][k].probability * table[k + 1][j].probability;
-							table[i][j].symbol = iter->second.nonTerminalParent;
-							cout<<i<<" "<<j<<" "<<table[i][j].probability<<endl;
+					map<string, double>::iterator iterA, iterB;
+					for (iterA = table[i][k].begin(); iterA != table[i][k].end(); iterA++)
+						for (iterB = table[k + 1][j].begin(); iterB != table[k + 1][j].end(); iterB++){
+							string nonTerminalA = iterA->first, nonTerminalB = iterB->first;
+							multimap<pair<string, string>, BinaryRule>::iterator iterC;
+							pair<multimap<pair<string, string>, BinaryRule>::iterator, multimap<pair<string, string>, BinaryRule>::iterator> ret = cnf.indexNonTerminalChildren.equal_range(pair<string, string>(nonTerminalA, nonTerminalB));
+							for (iterC = ret.first; iterC != ret.second; iterC++){
+								double tmp = iterC->second.probability * iterA->second * iterB->second;
+								if (table[i][j].find(iterC->second.nonTerminalParent) == table[i][j].end())
+									table[i][j][iterC->second.nonTerminalParent] = tmp;
+								else if (tmp > table[i][j][iterC->second.nonTerminalParent])
+									table[i][j][iterC->second.nonTerminalParent] = tmp;
+							}
 						}
 				}
 		}
-		cout << table[words.size()-1][words.size()-1].symbol << endl;
+		for (int i = 0; i < MAXN; i++)
+			for (int j = 0; j < MAXN; j++){
+				map<string, double>::iterator iter;
+				for (iter = table[i][j].begin(); iter != table[i][j].end(); iter++)
+					cout << i << " " << j << " " << iter->first << " " << iter->second << endl;
+			}
+		cout << table[0][words.size()-1]["S"] << endl;
 	}
 };
 
