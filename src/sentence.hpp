@@ -46,6 +46,7 @@ public:
 
 		for (int j = 0; j < words.size(); j++){
 					cout<<"!!!"<<endl;
+					cout<<cnf.indexWord[words[j]].word<<endl;
 			table[j][j].symbol = cnf.indexWord[words[j]].word;
 			table[j][j].probability = cnf.indexWord[words[j]].probability;
 			for (int i = j - 1; i >= 0; i--)

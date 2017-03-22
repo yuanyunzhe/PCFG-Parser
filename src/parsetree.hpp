@@ -7,7 +7,6 @@
 #include <stack>
 #include <map>
 
-#include "grammar.hpp"
 using namespace std;
 
 class ParseTreeNode{
@@ -15,17 +14,17 @@ public:
 	ParseTreeNode *parent, *left, *right;
 	bool isLeft;
 	int index;
-	string symbol, word;
+	string nonTerminal, terminal;
 	ParseTreeNode(){;}
-	ParseTreeNode(string symbol){
-		this->symbol = symbol;
-		this->word = "-";
+	ParseTreeNode(string nonTerminal){
+		this->nonTerminal = nonTerminal;
+		this->terminal = "-";
 		this->left = NULL;
 		this->right = NULL;
 	}
-	ParseTreeNode(string symbol, string word){
-		this->symbol = symbol;
-		this->word = word;
+	ParseTreeNode(string nonTerminal, string terminal){
+		this->nonTerminal = nonTerminal;
+		this->terminal = terminal;
 		this->left = NULL;
 		this->right = NULL;
 	}
@@ -41,22 +40,22 @@ public:
 		newNode->parent = this;
 		newNode->isLeft = false;
 	}
-	void insertWord(string word){
-		this->word = word;
+	void insertTerminal(string terminal){
+		this->terminal = terminal;
 	}
 };
 class ParseTree{
 public:
 	ParseTreeNode *root;
 	ParseTree(){;}
-	ParseTree(string symbol){
-		root = new ParseTreeNode(symbol);
+	ParseTree(string nonTerminal){
+		root = new ParseTreeNode(nonTerminal);
 		root->parent = root;
 		root->isLeft = true;
 	}
 
 	void preOrderTraversal(ParseTreeNode *node, vector<string> &words){
-		if (node->left == NULL) words.push_back(node->word);
+		if (node->left == NULL) words.push_back(node->terminal);
 		else{
 			preOrderTraversal(node->left, words);
 			preOrderTraversal(node->right, words);
@@ -64,7 +63,7 @@ public:
 	}
 
 	void inOrderTraversal(ParseTreeNode *node, vector<string> &words){
-		if (node->left == NULL) words.push_back(node->word);
+		if (node->left == NULL) words.push_back(node->terminal);
 		else{
 			words.push_back("(");
 			inOrderTraversal(node->left, words);
@@ -78,8 +77,7 @@ public:
 		return words;
 	}
 	void saveToEvalbFormat(ofstream &evalbOut){
-		vector<string> words;
-		words = getWords();
+		vector<string> words = getWords();
 		for (int j = 0; j < words.size() - 1; j++){
 			evalbOut << words[j];
 			if (((words[j] == ")") && (words[j + 1] == "(")) || 
@@ -90,7 +88,7 @@ public:
 	}
 
 	void save(ofstream &treeOut, ParseTreeNode *node){
-		treeOut << node->index << " " << node->symbol << " " << node->word << " " << node->parent->index << " " << node->isLeft << endl;
+		treeOut << node->index << " " << node->nonTerminal << " " << node->terminal << " " << node->parent->index << " " << node->isLeft << endl;
 		if (node->left != NULL){
 			save(treeOut, node->left);
 			save(treeOut, node->right);
@@ -103,12 +101,12 @@ public:
 	
 	void load(ifstream &treeIn){
 		int index, parentIndex;
-		string symbol, word;
+		string nonTerminal, terminal;
 		bool isLeft;
 		map<int, ParseTreeNode*> indexNode;
-		while (treeIn >> index >> symbol >> word >> parentIndex >> isLeft){
+		while (treeIn >> index >> nonTerminal >> terminal >> parentIndex >> isLeft){
 			if (index == -1) break;
-			ParseTreeNode *newNode = new ParseTreeNode(symbol, word);
+			ParseTreeNode *newNode = new ParseTreeNode(nonTerminal, terminal);
 			newNode->index = index;
 			newNode->isLeft = isLeft;
 			indexNode.insert(pair<int, ParseTreeNode*>(index, newNode));

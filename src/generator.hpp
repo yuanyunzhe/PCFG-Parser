@@ -17,40 +17,33 @@ using namespace std;
 class Generator{
 private:
 	int numSentences;
-	CNF cnf;
-	vector<ParseTree> parseTrees;
-	void generate(ParseTreeNode *node){
-		if (cnf.isTerminal[node->symbol]){
-			TerminalRule rule = cnf.randomizeTerminalRule(node->symbol);
-			node->insertWord(rule.word);
+	void generate(CNF &cnf, ParseTreeNode *node){
+		if (cnf.isUnary[node->nonTerminal]){
+			UnaryRule rule = cnf.randomizeUnaryRule(node->nonTerminal);
+			node->insertTerminal(rule.terminal);
 		}
 		else{
-			NonTerminalRule rule = cnf.randomizeNonTerminalRule(node->symbol);
+			BinaryRule rule = cnf.randomizeBinaryRule(node->nonTerminal);
 			node->insertChildren(rule.nonTerminalLeft, rule.nonTerminalRight);
-			generate(node->left);
-			generate(node->right);
+			generate(cnf, node->left);
+			generate(cnf, node->right);
 		}
 	}
 public:
-	Generator(int numSentences, CNF cnf){
+	Generator(int numSentences){
 		this->numSentences = numSentences;
-		this->cnf = cnf;
 	}
 
-	void generateSentences(ofstream &treeOut, ofstream &evalbOut){
+	void generateSentences(CNF &cnf, ofstream &treeOut, ofstream &evalbOut){
 		srand((unsigned)time(NULL));
-		parseTrees.clear();
 		for (int i = 1; i <= numSentences; i++){
-			ParseTree *parseTree;
-			parseTree = new ParseTree("S");
-			generate(parseTree->root);
+			ParseTree *parseTree = new ParseTree("S");
+			generate(cnf, parseTree->root);
 			parseTree->reassignIndex();
 			parseTree->save(treeOut);		
 			parseTree->saveToEvalbFormat(evalbOut);
-			parseTrees.push_back(*parseTree);
 		}
 	}
-
 };
 
 #endif

@@ -9,81 +9,57 @@
 
 #include <cstdlib>
 
-using namespace std;
+#include "rule.hpp"
 
-class TerminalRule{
-public:
-	string terminal, word;
-	double probability;
-	TerminalRule(){;}
-	TerminalRule(string terminal, string word, double probability){
-		this->terminal = terminal;
-		this->word = word;
-		this->probability = probability;
-	}
-};
-class NonTerminalRule{
-public:
-	string nonTerminalParent, nonTerminalLeft, nonTerminalRight;
-	double probability;
-	NonTerminalRule(){;}
-	NonTerminalRule(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, double probability){
-		this->nonTerminalParent = nonTerminalParent;
-		this->nonTerminalLeft = nonTerminalLeft;
-		this->nonTerminalRight = nonTerminalRight;
-		this->probability = probability;
-	}
-};
+using namespace std;
 
 class CNF{
 public:
-	vector<TerminalRule> terminalRules;
-	vector<NonTerminalRule> nonTerminalRules;
-	map<string, bool> isTerminal;
-	multimap<string, TerminalRule> indexTerminal;
-	multimap<string, NonTerminalRule>indexNonTerminalParent, indexNonTerminalLeft, indexNonTerminalRight;
-	map<string, TerminalRule> indexWord;
-	multimap<pair<string, string>, NonTerminalRule> indexNonTerminalChildren;
+	vector<UnaryRule> unaryRules;
+	vector<BinaryRule> binaryRules;
 
-	void addTerminal(string terminal, string word, double probability){
-		terminalRules.push_back(TerminalRule(terminal, word, probability));
-		isTerminal.insert(pair<string, bool>(terminal, true));
-		indexWord.insert(pair<string, TerminalRule>(word, terminalRules.back()));
+	map<string, bool> isUnary;
+
+	map<string, UnaryRule> indexNonTerminal;
+	multimap<string, UnaryRule> indexUnary;
+	multimap<string, BinaryRule>indexNonTerminalParent, indexNonTerminalLeft, indexNonTerminalRight;
+	multimap<pair<string, string>, BinaryRule> indexNonTerminalChildren;
+
+	void addUnary(string nonTerminal, string terminal, double probability){
+		unaryRules.push_back(UnaryRule(nonTerminal, terminal, probability));
+		isUnary.insert(pair<string, bool>(nonTerminal, true));
+		indexNonTerminal.insert(pair<string, UnaryRule>(nonTerminal, unaryRules.back()));
 	}
-	void addNonTerminal(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, double probability){
-		nonTerminalRules.push_back(NonTerminalRule(nonTerminalParent, nonTerminalLeft, nonTerminalRight, probability));
-		isTerminal.insert(pair<string, bool>(nonTerminalParent, false));
-		indexNonTerminalParent.insert(pair<string, NonTerminalRule>(nonTerminalParent, nonTerminalRules.back()));
-		indexNonTerminalLeft.insert(pair<string, NonTerminalRule>(nonTerminalLeft, nonTerminalRules.back()));
-		indexNonTerminalRight.insert(pair<string, NonTerminalRule>(nonTerminalRight, nonTerminalRules.back()));
-		indexNonTerminalChildren.insert(pair<pair<string, string>, NonTerminalRule>(pair<string, string>(nonTerminalLeft, nonTerminalRight), nonTerminalRules.back()));
+	void addBinary(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, double probability){
+		binaryRules.push_back(BinaryRule(nonTerminalParent, nonTerminalLeft, nonTerminalRight, probability));
+		isUnary.insert(pair<string, bool>(nonTerminalParent, false));
+		indexNonTerminalParent.insert(pair<string, BinaryRule>(nonTerminalParent, binaryRules.back()));
+		indexNonTerminalLeft.insert(pair<string, BinaryRule>(nonTerminalLeft, binaryRules.back()));
+		indexNonTerminalRight.insert(pair<string, BinaryRule>(nonTerminalRight, binaryRules.back()));
+		indexNonTerminalChildren.insert(pair<pair<string, string>, BinaryRule>(pair<string, string>(nonTerminalLeft, nonTerminalRight), binaryRules.back()));
 	}
 
-	TerminalRule randomizeTerminalRule(string terminal){
+	UnaryRule randomizeUnaryRule(string nonTerminal){
 		double randomProbability = rand() / double(RAND_MAX);
-		vector<TerminalRule>::iterator ruleIterator;
-		TerminalRule rule;
-		for (ruleIterator = terminalRules.begin(); ruleIterator != terminalRules.end(); ruleIterator++){
-			rule = *ruleIterator;
-			if (rule.terminal == terminal){
-				randomProbability -= rule.probability;
+		vector<UnaryRule>::iterator iter;
+		UnaryRule rule;
+		for (iter = unaryRules.begin(); iter != unaryRules.end(); iter++)
+			if (iter->nonTerminal == nonTerminal){
+				randomProbability -= iter->probability;
 				if (randomProbability <= 0) break;
 			}
-		}
-		return rule;
+		return *iter;
 	}
-	NonTerminalRule randomizeNonTerminalRule(string nonTerminal){
+	BinaryRule randomizeBinaryRule(string nonTerminal){
 		double randomProbability = rand() / double(RAND_MAX);
-		vector<NonTerminalRule>::iterator ruleIterator;
-		NonTerminalRule rule;
-		for (ruleIterator = nonTerminalRules.begin(); ruleIterator != nonTerminalRules.end(); ruleIterator++){
-			rule = *ruleIterator;
-			if (rule.nonTerminalParent == nonTerminal){
-				randomProbability -= rule.probability;
+		vector<BinaryRule>::iterator iter;
+		BinaryRule rule;
+		for (iter = binaryRules.begin(); iter != binaryRules.end(); iter++)
+			if (iter->nonTerminalParent == nonTerminal){
+				randomProbability -= iter->probability;
 				if (randomProbability <= 0) break;
 			}
-		}
-		return rule;
+		return *iter;
 	}
 	
 	void read(ifstream &grammarIn){
@@ -91,8 +67,8 @@ public:
 			string s1, s2, s3;
 			double p;
 			grammarIn >> s1 >> p >> s2 >> s3;
-			if (s2 == ".") addTerminal(s1, s3, p);
-			else addNonTerminal(s1, s2, s3, p);
+			if (s2 == ".") addUnary(s1, s3, p);
+			else addBinary(s1, s2, s3, p);
 		}
 	}
 };
