@@ -34,6 +34,8 @@ public:
 		words.clear();
 		parseTree->preOrderTraversal(parseTree->root, words);
 		this->cnf = cnf;
+		this->cnf.randomizeProbability();
+		this->cnf.createMap();
 	}
 	
 	void expection(){;}
@@ -68,13 +70,14 @@ public:
 						}
 				}
 		}
-		for (int i = 0; i < MAXN; i++)
-			for (int j = 0; j < MAXN; j++){
-				map<string, Table>::iterator iter;
-				for (iter = table[i][j].begin(); iter != table[i][j].end(); iter++)
-					cout << i << " " << j << " " << iter->first << " " << iter->second.probability << endl;
-			}
-		cout << table[0][words.size()-1]["S"].probability << endl;
+		// for (int i = 0; i < MAXN; i++)
+		// 	for (int j = 0; j < MAXN; j++){
+		// 		map<string, Table>::iterator iter;
+		// 		for (iter = table[i][j].begin(); iter != table[i][j].end(); iter++)
+		// 			cout << i << " " << j << " " << iter->first << " " << iter->second.probability << endl;
+		// 	}
+		// cout << table[0][words.size()-1]["S"].probability << endl;
+		cout<<cnf.binaryRules[0].probability<<endl;
 		ParseTree* parseTree = buildParseTree(words.size());
 		parseTree->reassignIndex();
 		parseTree->save(lalala);

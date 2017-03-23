@@ -21,22 +21,16 @@ public:
 	map<string, bool> isUnary;
 
 	map<string, UnaryRule> indexTerminal;
-	//multimap<string, UnaryRule> indexUnary;
 	multimap<string, BinaryRule>indexNonTerminalParent, indexNonTerminalLeft, indexNonTerminalRight;
 	multimap<pair<string, string>, BinaryRule> indexNonTerminalChildren;
 
 	void addUnary(string nonTerminal, string terminal, double probability){
 		unaryRules.push_back(UnaryRule(nonTerminal, terminal, probability));
-		isUnary.insert(pair<string, bool>(nonTerminal, true));
-		indexTerminal.insert(pair<string, UnaryRule>(terminal, unaryRules.back()));
+		isUnary.insert(pair<string, bool>(unaryRules.back().nonTerminal, true));
 	}
 	void addBinary(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, double probability){
 		binaryRules.push_back(BinaryRule(nonTerminalParent, nonTerminalLeft, nonTerminalRight, probability));
-		isUnary.insert(pair<string, bool>(nonTerminalParent, false));
-		indexNonTerminalParent.insert(pair<string, BinaryRule>(nonTerminalParent, binaryRules.back()));
-		indexNonTerminalLeft.insert(pair<string, BinaryRule>(nonTerminalLeft, binaryRules.back()));
-		indexNonTerminalRight.insert(pair<string, BinaryRule>(nonTerminalRight, binaryRules.back()));
-		indexNonTerminalChildren.insert(pair<pair<string, string>, BinaryRule>(pair<string, string>(nonTerminalLeft, nonTerminalRight), binaryRules.back()));
+		isUnary.insert(pair<string, bool>(binaryRules.back().nonTerminalParent, false));
 	}
 
 	UnaryRule randomizeUnaryRule(string nonTerminal){
@@ -62,6 +56,37 @@ public:
 		return *iter;
 	}
 	
+	void randomizeProbability(){
+		vector<UnaryRule>::iterator iterUnary;
+		vector<BinaryRule>::iterator iterBinary;
+		map<string, double> generalization;
+		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++){
+			iterUnary->probability = rand();
+			generalization[iterUnary->nonTerminal] += iterUnary->probability;
+		}
+		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)
+			iterUnary->probability /= generalization[iterUnary->nonTerminal];
+		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++){
+			iterBinary->probability = rand();
+			generalization[iterBinary->nonTerminalParent] += iterBinary->probability;
+		}
+		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++)
+			iterBinary->probability /= generalization[iterBinary->nonTerminalParent];
+	}
+
+	void createMap(){
+		vector<UnaryRule>::iterator iterUnary;
+		vector<BinaryRule>::iterator iterBinary;
+		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)	
+			indexTerminal.insert(pair<string, UnaryRule>(iterUnary->terminal, *iterUnary));
+		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++){
+			indexNonTerminalParent.insert(pair<string, BinaryRule>(iterBinary->nonTerminalParent, *iterBinary));
+			indexNonTerminalLeft.insert(pair<string, BinaryRule>(iterBinary->nonTerminalLeft, *iterBinary));
+			indexNonTerminalRight.insert(pair<string, BinaryRule>(iterBinary->nonTerminalRight, *iterBinary));
+			indexNonTerminalChildren.insert(pair<pair<string, string>, BinaryRule>(pair<string, string>(iterBinary->nonTerminalLeft, iterBinary->nonTerminalRight), *iterBinary));
+		}
+	}
+
 	void read(ifstream &grammarIn){
 		while (!grammarIn.eof()){
 			string s1, s2, s3;
