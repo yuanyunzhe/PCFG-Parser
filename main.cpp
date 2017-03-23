@@ -3,7 +3,7 @@
 #include <cstdio>
 
 #include "src/grammar.hpp"
-// #include "src/sentence.hpp"
+#include "src/sentence.hpp"
 #include "src/generator.hpp"
 
 using namespace std;
@@ -21,8 +21,8 @@ int main(){
 	treeOut.open("sentences/sentences.save");
 	evalbOut.open("sentences/sentences.gld");
 
-	Generator generator(100);
-	generator.generateSentences(emile, treeOut, evalbOut);
+	Generator generator(100, emile);
+	generator.generateSentences(treeOut, evalbOut);
 
 	evalbOut.close();
 	treeOut.close();
@@ -38,11 +38,15 @@ int main(){
 	// }
 	// treeIn.close();
 	// treeOut.close();
+	treeIn.open("sentences/sentences.save");
+	grammarIn.open("grammar/emile.cnf");
 
-	// treeIn.open("sentences/sentences.save");
-	// grammarIn.open("grammar/emile.cnf");
-	// Sentence sentence(treeIn, grammarIn);
-	// sentence.CYK();
-	// treeIn.close();
-	// grammarIn.close();
+	ofstream lalala;
+	lalala.open("sentences/lalala.save");
+	for (int i = 0; i < 100; i++){
+		Sentence sentence(treeIn, emile);
+		sentence.CYK(lalala);
+	}
+	treeIn.close();
+	grammarIn.close();
 }
