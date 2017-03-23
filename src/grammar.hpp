@@ -20,9 +20,9 @@ public:
 
 	map<string, bool> isUnary;
 
-	map<string, UnaryRule> indexTerminal;
-	multimap<string, BinaryRule>indexNonTerminalParent, indexNonTerminalLeft, indexNonTerminalRight;
-	multimap<pair<string, string>, BinaryRule> indexNonTerminalChildren;
+	map<string, UnaryRule*> indexTerminal;
+	multimap<string, BinaryRule*>indexNonTerminalParent, indexNonTerminalLeft, indexNonTerminalRight;
+	multimap<pair<string, string>, BinaryRule*> indexNonTerminalChildren;
 
 	void addUnary(string nonTerminal, string terminal, double probability){
 		unaryRules.push_back(UnaryRule(nonTerminal, terminal, probability));
@@ -75,15 +75,13 @@ public:
 	}
 
 	void createMap(){
-		vector<UnaryRule>::iterator iterUnary;
-		vector<BinaryRule>::iterator iterBinary;
-		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)	
-			indexTerminal.insert(pair<string, UnaryRule>(iterUnary->terminal, *iterUnary));
-		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++){
-			indexNonTerminalParent.insert(pair<string, BinaryRule>(iterBinary->nonTerminalParent, *iterBinary));
-			indexNonTerminalLeft.insert(pair<string, BinaryRule>(iterBinary->nonTerminalLeft, *iterBinary));
-			indexNonTerminalRight.insert(pair<string, BinaryRule>(iterBinary->nonTerminalRight, *iterBinary));
-			indexNonTerminalChildren.insert(pair<pair<string, string>, BinaryRule>(pair<string, string>(iterBinary->nonTerminalLeft, iterBinary->nonTerminalRight), *iterBinary));
+		for (int i = 0; i < unaryRules.size(); i++)
+			indexTerminal.insert(pair<string, UnaryRule*>(unaryRules[i].terminal, &unaryRules[i]));
+		for (int i = 0; i < binaryRules.size(); i++){
+			indexNonTerminalParent.insert(pair<string, BinaryRule*>(binaryRules[i].nonTerminalParent, &binaryRules[i]));
+			indexNonTerminalLeft.insert(pair<string, BinaryRule*>(binaryRules[i].nonTerminalLeft, &binaryRules[i]));
+			indexNonTerminalRight.insert(pair<string, BinaryRule*>(binaryRules[i].nonTerminalRight, &binaryRules[i]));
+			indexNonTerminalChildren.insert(pair<pair<string, string>, BinaryRule*>(pair<string, string>(binaryRules[i].nonTerminalLeft, binaryRules[i].nonTerminalRight), &binaryRules[i]));
 		}
 	}
 
