@@ -21,7 +21,7 @@ int main(){
 	treeOut.open("sentences/sentences.save");
 	evalbOut.open("sentences/sentences.gld");
 
-	Generator generator(10000, emile);
+	Generator generator(1000, emile);
 	generator.generateSentences(treeOut, evalbOut);
 
 	evalbOut.close();
@@ -43,9 +43,10 @@ int main(){
 
 	ofstream lalala;
 	lalala.open("sentences/lalala.save");
-	for (int i = 0; i < 10000; i++){
+	for (int i = 0; i < 1000; i++){
 		Sentence sentence(treeIn, emile);
 		sentence.CYK(lalala);
+		sentence.calculateInside();
 	}
 	treeIn.close();
 	grammarIn.close();
