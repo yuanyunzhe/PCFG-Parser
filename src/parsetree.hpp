@@ -80,7 +80,7 @@ public:
 		vector<string> words = getWords();
 		for (int j = 0; j < words.size() - 1; j++){
 			evalbOut << words[j];
-			if (((words[j] == ")") && (words[j + 1] == "(")) || 
+			if (((words[j] == ")") && (words[j + 1] != ")")) || 
 				((words[j] != "(") && (words[j] != ")") && (words[j + 1] != "(") && (words[j + 1] != ")")) ||
 				((words[j] != "(") && (words[j + 1] == "("))) evalbOut << " ";
 		}

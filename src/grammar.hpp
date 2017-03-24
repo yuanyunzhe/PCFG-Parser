@@ -21,8 +21,8 @@ public:
 	map<string, bool> isUnary;
 
 	map<string, UnaryRule*> indexTerminal;
-	multimap<string, BinaryRule*>indexNonTerminalParent, indexNonTerminalLeft, indexNonTerminalRight;
-	multimap<pair<string, string>, BinaryRule*> indexNonTerminalChildren;
+	multimap<string, BinaryRule*>indexNonTerminalParent;
+	multimap<pair<string, string>, BinaryRule*> indexNonTerminalParentAndLeft, indexNonTerminalParentAndRight, indexNonTerminalChildren;
 
 	void addUnary(string nonTerminal, string terminal, double probability){
 		unaryRules.push_back(UnaryRule(nonTerminal, terminal, probability));
@@ -79,8 +79,8 @@ public:
 			indexTerminal.insert(pair<string, UnaryRule*>(unaryRules[i].terminal, &unaryRules[i]));
 		for (int i = 0; i < binaryRules.size(); i++){
 			indexNonTerminalParent.insert(pair<string, BinaryRule*>(binaryRules[i].nonTerminalParent, &binaryRules[i]));
-			indexNonTerminalLeft.insert(pair<string, BinaryRule*>(binaryRules[i].nonTerminalLeft, &binaryRules[i]));
-			indexNonTerminalRight.insert(pair<string, BinaryRule*>(binaryRules[i].nonTerminalRight, &binaryRules[i]));
+			indexNonTerminalParentAndLeft.insert(pair<pair<string, string>, BinaryRule*>(pair<string, string>(binaryRules[i].nonTerminalParent, binaryRules[i].nonTerminalLeft), &binaryRules[i]));
+			indexNonTerminalParentAndRight.insert(pair<pair<string, string>, BinaryRule*>(pair<string, string>(binaryRules[i].nonTerminalParent, binaryRules[i].nonTerminalRight), &binaryRules[i]));
 			indexNonTerminalChildren.insert(pair<pair<string, string>, BinaryRule*>(pair<string, string>(binaryRules[i].nonTerminalLeft, binaryRules[i].nonTerminalRight), &binaryRules[i]));
 		}
 	}
