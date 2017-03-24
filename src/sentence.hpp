@@ -27,6 +27,7 @@ public:
 	ParseTree *parseTree;
 	vector<string> words;
 	map<string, Table> table[MAXN][MAXN];
+	map<string, double> alpha[MAXN][MAXN], beta[MAXN][MAXN];
 
 	Sentence(ifstream &treeIn, CNF &cnf){
 		parseTree = new ParseTree;
@@ -41,7 +42,29 @@ public:
 	void expection(){;}
 	void maximization(){;}
 
-	void calculateInside(){;}
+	void calculateInside(){
+		for (int i = 0; i < MAXN; i++)
+			for (int j = 0; j < MAXN; j++)
+				beta[i][j].clear();
+		for (int j = 0; j < words.size(); j++){
+			beta[j][j][cnf.indexTerminal[words[j]]->nonTerminal] = cnf.indexTerminal[words[j]]->probability;
+			for (int i = j - 1; i >= 0; i--)
+				for (int k = i; k <= j - 1; k++){
+					map<string, double>::iterator iterA, iterB;
+					for (iterA = beta[i][k].begin(); iterA != beta[i][k].end(); iterA++)
+						for (iterB = beta[k + 1][j].begin(); iterB != beta[k + 1][j].end(); iterB++){
+							string nonTerminalA = iterA->first, nonTerminalB = iterB->first;
+							multimap<pair<string, string>, BinaryRule*>::iterator iterC;
+							pair<multimap<pair<string, string>, BinaryRule*>::iterator, multimap<pair<string, string>, BinaryRule*>::iterator> ret = cnf.indexNonTerminalChildren.equal_range(pair<string, string>(nonTerminalA, nonTerminalB));
+							for (iterC = ret.first; iterC != ret.second; iterC++){
+								double tmp = iterC->second->probability * iterA->second * iterB->second;
+								if (beta[i][j].find(iterC->second->nonTerminalParent) == beta[i][j].end())
+									beta[i][j][iterC->second->nonTerminalParent] += tmp;
+							}
+						}
+				}
+		}
+	}
 	void calculateOutside(){;}
 	void CYK(ofstream &lalala){		
 		for (int i = 0; i < MAXN; i++)
