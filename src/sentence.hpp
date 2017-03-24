@@ -64,6 +64,7 @@ public:
 						}
 				}
 		}
+				cout << beta[0][words.size()-1]["S"]<<endl;
 	}
 	void calculateOutside(){;}
 	void CYK(ofstream &lalala){		
