@@ -21,10 +21,10 @@ public:
 	string preNonTerminalA, preNonTerminalB;
 };
 
-class IO{
-public:
-	double alpha, beta;
-};	
+// class IO{
+// public:
+// 	double alpha, beta;
+// };	
 
 class Sentence{
 public:
@@ -32,7 +32,7 @@ public:
 	ParseTree *parseTree;
 	vector<string> words;
 	map<string, Table> table[MAXN][MAXN];
-	map<string, IO> io[MAXN][MAXN];
+	map<string, double> alpha[MAXN][MAXN], beta[MAXN][MAXN];
 
 	Sentence(ifstream &treeIn, CNF &cnf){
 		parseTree = new ParseTree;
@@ -49,64 +49,70 @@ public:
 
 	void calculateInsideOutside(){
 		for (int i = 0; i < MAXN; i++)
-			for (int j = 0; j < MAXN; j++)
-				io[i][j].clear();
+			for (int j = 0; j < MAXN; j++){
+				alpha[i][j].clear();
+				beta[i][j].clear();
+			}
 		for (int j = 0; j < words.size(); j++){
-			io[j][j][cnf.indexTerminal[words[j]]->nonTerminal].beta = cnf.indexTerminal[words[j]]->probability;
+			beta[j][j][cnf.indexTerminal[words[j]]->nonTerminal] = cnf.indexTerminal[words[j]]->probability;
 			for (int i = j - 1; i >= 0; i--)
 				for (int k = i; k <= j - 1; k++){
-					map<string, IO>::iterator iterA, iterB;
-					for (iterA = io[i][k].begin(); iterA != io[i][k].end(); iterA++)
-						for (iterB = io[k + 1][j].begin(); iterB != io[k + 1][j].end(); iterB++){
+					map<string, double>::iterator iterA, iterB;
+					for (iterA = beta[i][k].begin(); iterA != beta[i][k].end(); iterA++)
+						for (iterB = beta[k + 1][j].begin(); iterB != beta[k + 1][j].end(); iterB++){
 							string nonTerminalA = iterA->first, nonTerminalB = iterB->first;
 							multimap<pair<string, string>, BinaryRule*>::iterator iterC;
 							pair<multimap<pair<string, string>, BinaryRule*>::iterator, multimap<pair<string, string>, BinaryRule*>::iterator> ret = cnf.indexNonTerminalChildren.equal_range(pair<string, string>(nonTerminalA, nonTerminalB));
 							for (iterC = ret.first; iterC != ret.second; iterC++){
-								double tmp = iterC->second->probability * iterA->second.beta * iterB->second.beta;
-								io[i][j][iterC->second->nonTerminalParent].beta += tmp;
+								double tmp = iterC->second->probability * iterA->second * iterB->second;
+								beta[i][j][iterC->second->nonTerminalParent] += tmp;
 							}
 						}
 				}
 		}
 		vector<BinaryRule>::iterator iter;
 		for (iter = cnf.binaryRules.begin(); iter != cnf.binaryRules.end(); iter++)
-			if (iter->nonTerminalParent == "S") io[0][words.size() - 1][iter->nonTerminalParent].alpha = 1;
-			else io[0][words.size() - 1][iter->nonTerminalParent].alpha = 0;
+			if (iter->nonTerminalParent == "S") alpha[0][words.size() - 1][iter->nonTerminalParent] = 1;
+			//else alpha[0][words.size() - 1][iter->nonTerminalParent] = 0;
 		for (int j = 0; j < words.size(); j++){
 			for (int i = 0; i <= j; i++){
-				for (int k = 0; k < i; k++){
-					map<string, IO>::iterator iterA, iterB;
-					for (iterA = io[k][j].begin(); iterA != io[k][j].end(); iterA++)
-						for (iterB = io[k][i - 1].begin(); iterB != io[k][i - 1].end(); iterB++){
-							string nonTerminalA = iterA->first, nonTerminalB = iterB->first;
-							multimap<pair<string, string>, BinaryRule*>::iterator iterC;
-							pair<multimap<pair<string, string>, BinaryRule*>::iterator, multimap<pair<string, string>, BinaryRule*>::iterator> ret = cnf.indexNonTerminalParentAndRight.equal_range(pair<string, string>(nonTerminalA, nonTerminalB));
-							for (iterC = ret.first; iterC != ret.second; iterC++){
-								double tmp = iterC->second->probability * iterA->second.alpha * iterB->second.beta;	
-								io[i][j][iterC->second->nonTerminalParent].alpha += tmp;
+				if (i > 0)
+					for (int k = 0; k < i; k++){
+						map<string, double>::iterator iterA, iterB;
+						for (iterA = alpha[k][j].begin(); iterA != alpha[k][j].end(); iterA++){
+					//		cout<<"~~~~~~~~~~~"<<k<< " "<<j<<"   "<<iterA->first<<endl;
+							for (iterB = beta[k][i - 1].begin(); iterB != beta[k][i - 1].end(); iterB++){
+								string nonTerminalA = iterA->first, nonTerminalB = iterB->first;
+								multimap<pair<string, string>, BinaryRule*>::iterator iterC;
+								pair<multimap<pair<string, string>, BinaryRule*>::iterator, multimap<pair<string, string>, BinaryRule*>::iterator> ret = cnf.indexNonTerminalParentAndLeft.equal_range(pair<string, string>(nonTerminalA, nonTerminalB));
+								for (iterC = ret.first; iterC != ret.second; iterC++){
+									double tmp = iterC->second->probability * iterA->second * iterB->second;	
+									alpha[i][j][iterC->second->nonTerminalRight] += tmp;
+						//		cout<<"!!!!"<<k<<" "<<j<<" "<<iterC->second->probability<<" "<<iterA->first<<" "<<iterB->first<<" "<<iterA->second<<" "<<iterB->second<<" "<<words.size()-1<<"   "<<tmp<<endl;
+								}
+							}}
+					}
+				if (j < words.size() - 1)
+					for (int k = j + 1; k < words.size(); k++){
+						map<string, double>::iterator iterA, iterB;
+						for (iterA = alpha[i][k].begin(); iterA != alpha[i][k].end(); iterA++)
+							for (iterB = beta[j + 1][k].begin(); iterB != beta[j + 1][k].end(); iterB++){
+								string nonTerminalA = iterA->first, nonTerminalB = iterB->first;
+								multimap<pair<string, string>, BinaryRule*>::iterator iterC;
+								pair<multimap<pair<string, string>, BinaryRule*>::iterator, multimap<pair<string, string>, BinaryRule*>::iterator> ret = cnf.indexNonTerminalParentAndRight.equal_range(pair<string, string>(nonTerminalA, nonTerminalB));
+								for (iterC = ret.first; iterC != ret.second; iterC++){
+									double tmp = iterC->second->probability * iterA->second * iterB->second;	
+									alpha[i][j][iterC->second->nonTerminalLeft] += tmp;
+								}
 							}
-						}
-				}
-				for (int k = j + 1; k < words.size(); k++){
-					map<string, IO>::iterator iterA, iterB;
-					for (iterA = io[i][k].begin(); iterA != io[i][k].end(); iterA++)
-						for (iterB = io[j + 1][k].begin(); iterB != io[j + 1][k].end(); iterB++){
-							string nonTerminalA = iterA->first, nonTerminalB = iterB->first;
-							multimap<pair<string, string>, BinaryRule*>::iterator iterC;
-							pair<multimap<pair<string, string>, BinaryRule*>::iterator, multimap<pair<string, string>, BinaryRule*>::iterator> ret = cnf.indexNonTerminalParentAndLeft.equal_range(pair<string, string>(nonTerminalA, nonTerminalB));
-							for (iterC = ret.first; iterC != ret.second; iterC++){
-								double tmp = iterC->second->probability * iterA->second.alpha * iterB->second.beta;	
-								io[i][j][iterC->second->nonTerminalParent].alpha += tmp;
-							}
-						}
-				}
+					}
 			}
 		}
 		for (int i = 0; i < MAXN; i++)
 			for (int j = 0; j < MAXN; j++){
-				map<string, IO>::iterator iter;
-				for (iter = io[i][j].begin(); iter != io[i][j].end(); iter++)
-					cout << i << " " << j << " " << iter->first << " " << iter->second.alpha <<"           " << iter->second.beta << endl;
+				map<string, double>::iterator iter;
+				for (iter = alpha[i][j].begin(); iter != alpha[i][j].end(); iter++)
+					cout << i << " " << j << " " << iter->first << " " << iter->second << endl;
 			}
 	}
 	void CYK(ofstream &lalala){		
