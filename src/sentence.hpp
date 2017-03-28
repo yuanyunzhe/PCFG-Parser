@@ -44,14 +44,17 @@ public:
 		this->cnf.createMap();
 	}
 	
-	void emTraining(){
-		calculateInsideOutside();
-		expection();
-		maximization();
+	void emTraining(ofstream &lalala){
+		for (int i = 1; i <= 100; i++){
+			cout << i << " ";
+			calculateInsideOutside();
+			expection();
+			maximization();
+		}
+		CYK(lalala);
 	}
-	
+
 	void expection(){
-		
 		vector<BinaryRule>::iterator iter;
 		for (iter = cnf.binaryRules.begin(); iter != cnf.binaryRules.end(); iter++){
 			double tmp = 0;
