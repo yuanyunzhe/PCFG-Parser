@@ -20,7 +20,7 @@ public:
 class BinaryRule{
 public:
 	string nonTerminalParent, nonTerminalLeft, nonTerminalRight;
-	double probability;
+	double probability, count;
 	BinaryRule(){;}
 	BinaryRule(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, double probability){
 		this->nonTerminalParent = nonTerminalParent;

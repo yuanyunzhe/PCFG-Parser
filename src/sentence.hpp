@@ -44,8 +44,30 @@ public:
 		this->cnf.createMap();
 	}
 	
-	void expection(){;}
-	void maximization(){;}
+	void emTraining(){
+		calculateInsideOutside();
+		expection();
+		maximization();
+	}
+	
+	void expection(){
+		
+		vector<BinaryRule>::iterator iter;
+		for (iter = cnf.binaryRules.begin(); iter != cnf.binaryRules.end(); iter++){
+			double tmp = 0;
+			for (int i = 0; i < words.size() - 1; i++)
+				for (int j = i + 1; j < words.size(); j++)
+					for (int k = i; k < j; k++)
+						tmp += alpha[i][j][iter->nonTerminalParent] * iter->probability * beta[i][k][iter->nonTerminalLeft] * beta[k + 1][j][iter->nonTerminalRight] / beta[0][words.size() - 1]["S"];
+			iter->count = tmp;
+		}
+	}
+	void maximization(){
+		vector<BinaryRule>::iterator iter;
+		for (iter = cnf.binaryRules.begin(); iter != cnf.binaryRules.end(); iter++)
+			iter->probability = iter->count;
+		cnf.generalizeProbability();
+	}
 
 	void calculateInsideOutside(){
 		for (int i = 0; i < MAXN; i++)
@@ -108,12 +130,12 @@ public:
 					}
 			}
 		}
-		for (int i = 0; i < MAXN; i++)
-			for (int j = 0; j < MAXN; j++){
-				map<string, double>::iterator iter;
-				for (iter = alpha[i][j].begin(); iter != alpha[i][j].end(); iter++)
-					cout << i << " " << j << " " << iter->first << " " << iter->second << endl;
-			}
+		// for (int i = 0; i < MAXN; i++)
+		// 	for (int j = 0; j < MAXN; j++){
+		// 		map<string, double>::iterator iter;
+		// 		for (iter = alpha[i][j].begin(); iter != alpha[i][j].end(); iter++)
+		// 			cout << i << " " << j << " " << iter->first << " " << iter->second << endl;
+			// }
 	}
 	void CYK(ofstream &lalala){		
 		for (int i = 0; i < MAXN; i++)
