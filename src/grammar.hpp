@@ -8,6 +8,7 @@
 #include <map>
 
 #include <cstdlib>
+#include <cmath>
 
 #include "rule.hpp"
 
@@ -40,7 +41,7 @@ public:
 		for (iter = unaryRules.begin(); iter != unaryRules.end(); iter++)
 			if (iter->nonTerminal == nonTerminal){
 				randomProbability -= iter->probability;
-				if (randomProbability <= 0) break;
+				if (randomProbability <= 0.0000001) break;
 			}
 		return *iter;
 	}
@@ -51,7 +52,8 @@ public:
 		for (iter = binaryRules.begin(); iter != binaryRules.end(); iter++)
 			if (iter->nonTerminalParent == nonTerminal){
 				randomProbability -= iter->probability;
-				if (randomProbability <= 0) break;
+				if (randomProbability <= 0.0000001)
+					break;
 			}
 		return *iter;
 	}
@@ -59,19 +61,25 @@ public:
 	void randomizeProbability(){
 		vector<UnaryRule>::iterator iterUnary;
 		vector<BinaryRule>::iterator iterBinary;
-		map<string, double> generalization;
-		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++){
-			iterUnary->probability = rand();
-			generalization[iterUnary->nonTerminal] += iterUnary->probability;
-		}
 		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)
-			iterUnary->probability /= generalization[iterUnary->nonTerminal];
-		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++){
-			iterBinary->probability = rand();
-			generalization[iterBinary->nonTerminalParent] += iterBinary->probability;
-		}
+			iterUnary->probability = rand();
 		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++)
-			iterBinary->probability /= generalization[iterBinary->nonTerminalParent];
+			iterBinary->probability = rand();
+		generalizeProbability();
+	}
+
+	void generalizeProbability(){
+		vector<UnaryRule>::iterator iterUnary;
+		vector<BinaryRule>::iterator iterBinary;
+		map<string, double> generalizationUnary, generalizationBinary;
+		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)
+			generalizationUnary[iterUnary->nonTerminal] += iterUnary->probability;
+		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++)
+			generalizationBinary[iterBinary->nonTerminalParent] += iterBinary->probability;
+		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)
+			iterUnary->probability /= generalizationUnary[iterUnary->nonTerminal];
+		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++)
+			iterBinary->probability /= generalizationBinary[iterBinary->nonTerminalParent];
 	}
 
 	void createMap(){
@@ -93,6 +101,7 @@ public:
 			if (s2 == ".") addUnary(s1, s3, p);
 			else addBinary(s1, s2, s3, p);
 		}
+		generalizeProbability();
 	}
 };
 
