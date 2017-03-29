@@ -36,4 +36,18 @@ public:
 	vector<BinaryRule> binaryRules;
 };
 
+#define MAX_NON_TERMINALS 100
+#define MAX_TERMINALS 100
+
+class TrainingRules{
+public:
+	int numNonTerminals, numTerminals;
+	double nonTerminalProbability[MAX_NON_TERMINALS][MAX_NON_TERMINALS][MAX_NON_TERMINALS];
+	double terminalProbability[MAX_NON_TERMINALS][MAX_TERMINALS];
+	TrainingRules(int numNonTerminals, int numTerminals){
+		this->numNonTerminals = numNonTerminals;
+		this->numTerminals = numTerminals;
+	}
+};
+
 #endif
