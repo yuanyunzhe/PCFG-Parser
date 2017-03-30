@@ -10,7 +10,7 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "rule.hpp"
+#include "Rule.hpp"
 
 using namespace std;
 
@@ -20,11 +20,7 @@ public:
 	vector<BinaryRule> binaryRules;
 
 	map<string, bool> isUnary;
-
-	map<string, UnaryRule*> indexTerminal;
-	multimap<string, BinaryRule*>indexNonTerminalParent;
-	multimap<pair<string, string>, BinaryRule*> indexNonTerminalParentAndLeft, indexNonTerminalParentAndRight, indexNonTerminalChildren;
-
+	
 	void addUnary(string nonTerminal, string terminal, double probability){
 		unaryRules.push_back(UnaryRule(nonTerminal, terminal, probability));
 		isUnary.insert(pair<string, bool>(unaryRules.back().nonTerminal, true));
@@ -57,16 +53,6 @@ public:
 			}
 		return *iter;
 	}
-	
-	void randomizeProbability(){
-		vector<UnaryRule>::iterator iterUnary;
-		vector<BinaryRule>::iterator iterBinary;
-		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)
-			iterUnary->probability = rand();
-		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++)
-			iterBinary->probability = rand();
-		generalizeProbability();
-	}
 
 	void generalizeProbability(){
 		vector<UnaryRule>::iterator iterUnary;
@@ -82,17 +68,6 @@ public:
 			iterBinary->probability /= generalizationBinary[iterBinary->nonTerminalParent];
 	}
 
-	void createMap(){
-		for (int i = 0; i < unaryRules.size(); i++)
-			indexTerminal.insert(pair<string, UnaryRule*>(unaryRules[i].terminal, &unaryRules[i]));
-		for (int i = 0; i < binaryRules.size(); i++){
-			indexNonTerminalParent.insert(pair<string, BinaryRule*>(binaryRules[i].nonTerminalParent, &binaryRules[i]));
-			indexNonTerminalParentAndLeft.insert(pair<pair<string, string>, BinaryRule*>(pair<string, string>(binaryRules[i].nonTerminalParent, binaryRules[i].nonTerminalLeft), &binaryRules[i]));
-			indexNonTerminalParentAndRight.insert(pair<pair<string, string>, BinaryRule*>(pair<string, string>(binaryRules[i].nonTerminalParent, binaryRules[i].nonTerminalRight), &binaryRules[i]));
-			indexNonTerminalChildren.insert(pair<pair<string, string>, BinaryRule*>(pair<string, string>(binaryRules[i].nonTerminalLeft, binaryRules[i].nonTerminalRight), &binaryRules[i]));
-		}
-	}
-
 	void read(ifstream &grammarIn){
 		while (!grammarIn.eof()){
 			string s1, s2, s3;
@@ -103,6 +78,21 @@ public:
 		}
 		generalizeProbability();
 	}
+};
+
+#define MAX_NON_TERMINALS 100
+#define MAX_TERMINALS 100
+
+class TrainingGrammar{
+public:
+	int numNonTerminals, numTerminals;
+	double nonTerminalProbability[MAX_NON_TERMINALS][MAX_NON_TERMINALS][MAX_NON_TERMINALS];
+	double terminalProbability[MAX_NON_TERMINALS][MAX_TERMINALS];
+	TrainingGrammar(int numNonTerminals, int numTerminals){
+		this->numNonTerminals = numNonTerminals;
+		this->numTerminals = numTerminals;
+	}
+	map<string, int> indexTerminal;
 };
 
 #endif

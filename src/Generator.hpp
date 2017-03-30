@@ -9,8 +9,8 @@
 #include <cstdlib>
 #include <ctime>
 
-#include "grammar.hpp"
-#include "parsetree.hpp"
+#include "Grammar.hpp"
+#include "Parsetree.hpp"
 
 using namespace std;
 
