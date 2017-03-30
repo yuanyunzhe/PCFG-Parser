@@ -8,6 +8,7 @@
 #include <map>
 
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
 
 #include "Rule.hpp"
@@ -93,6 +94,10 @@ public:
 		this->numTerminals = numTerminals;
 	}
 	map<string, int> indexTerminal;
+	TrainingGrammar(){
+		memset(nonTerminalProbability, 0, sizeof(nonTerminalProbability));
+		memset(terminalProbability, 0, sizeof(terminalProbability));
+	}
 };
 
 #endif
