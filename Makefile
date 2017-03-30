@@ -1,5 +1,5 @@
-main : ./src/rule.hpp ./src/grammar.hpp ./src/parsetree.hpp ./src/sentence.hpp ./src/generator.hpp main.cpp
+main : ./src/Rule.hpp ./src/Grammar.hpp ./src/Parsetree.hpp ./src/Sentence.hpp ./src/Generator.hpp main.cpp
 	g++ main.cpp -o main
 
 clean :
-	rm ./src/rule.hpp.gch ./src/grammar.hpp.gch ./src/parsetree.hpp.gch ./src/sentence.hpp.gch ./src/generator.hpp.gch
+	rm ./src/Rule.hpp.gch ./src/Grammar.hpp.gch ./src/Parsetree.hpp.gch ./src/Sentence.hpp.gch ./src/Generator.hpp.gch
