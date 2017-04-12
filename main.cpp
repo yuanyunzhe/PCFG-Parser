@@ -2,9 +2,9 @@
 
 #include <cstdio>
 
-#include "src/grammar.hpp"
-#include "src/sentence.hpp"
-#include "src/generator.hpp"
+#include "src/Grammar.hpp"
+#include "src/EM.hpp"
+#include "src/Generator.hpp"
 
 using namespace std;
 
@@ -29,27 +29,33 @@ int main(int argc, char const *argv[]){
 		treeOut.close();
 	}
 	else if ((string)argv[1] == "-t"){
-		CNF emile;
-		ifstream grammarIn;
-		grammarIn.open("grammar/emile.cnf");
-		emile.read(grammarIn);
-		grammarIn.close();
+		// CNF emile;
+		// ifstream grammarIn;
+		// grammarIn.open("grammar/emile.cnf");
+		// emile.read(grammarIn);
+		// grammarIn.close();
 				ifstream treeIn;
-		ofstream treeOut, evalbOut;
+		// ofstream treeOut, evalbOut;
 		treeIn.open("sentences/sentences.save");
-		grammarIn.open("grammar/emile.cnf");
+		// grammarIn.open("grammar/emile.cnf");
 
-		ofstream lalala;
-		lalala.open("sentences/lalala.save");
-		for (int i = 0; i < 50; i++){
-			cout << "The " << i << "-th sentence:" << endl;
-			Sentence sentence(treeIn, emile);
-			cout << "Length: " << sentence.words.size() << endl;
-			sentence.emTraining(lalala);
-			cout << endl;
-		}
+		// ofstream lalala;
+		// lalala.open("sentences/lalala.save");
+		// for (int i = 0; i < 50; i++){
+		// 	cout << "The " << i << "-th sentence:" << endl;
+		// 	Sentence sentence(treeIn, emile);
+		// 	cout << "Length: " << sentence.words.size() << endl;
+		// 	sentence.emTraining(lalala);
+		// 	cout << endl;
+		// }
+		EM em;
+		cout<<"###"<<endl;
+		em.setNumSentences(50);
+		em.readParseTree(treeIn);
+		em.initializeTrainingGrammar(20);
+		em.training();
 		treeIn.close();
-		grammarIn.close();
+		// grammarIn.close();
 	}
 
 

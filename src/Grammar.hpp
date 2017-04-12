@@ -81,8 +81,8 @@ public:
 	}
 };
 
-#define MAX_NON_TERMINALS 100
-#define MAX_TERMINALS 100
+#define MAX_NON_TERMINALS 50
+#define MAX_TERMINALS 50
 
 class TrainingGrammar{
 public:
