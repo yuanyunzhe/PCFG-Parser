@@ -12,7 +12,7 @@ int main(int argc, char const *argv[]){
 	if ((string)argv[1] == "-g"){
 		CNF emile;
 		ifstream grammarIn;
-		grammarIn.open("grammar/emile.cnf");
+		grammarIn.open("grammar/emile_init.cnf");
 		emile.read(grammarIn);
 		grammarIn.close();
 
@@ -22,7 +22,7 @@ int main(int argc, char const *argv[]){
 		treeOut.open("sentences/sentences.save");
 		evalbOut.open("sentences/sentences.gld");
 
-		Generator generator(50, emile);
+		Generator generator(15, emile);
 		generator.generateSentences(treeOut, evalbOut);
 
 		evalbOut.close();
@@ -48,13 +48,17 @@ int main(int argc, char const *argv[]){
 		// 	sentence.emTraining(lalala);
 		// 	cout << endl;
 		// }
+		ofstream evalbOut;
+		evalbOut.open("sentences/sentences_out.gld");
 		EM em;
 		cout<<"###"<<endl;
 		em.setNumSentences(15);
 		em.readParseTree(treeIn);
-		em.initializeTrainingGrammar(10);
+		em.initializeTrainingGrammar(20);
 		em.training();
+		em.predicting(evalbOut);
 		treeIn.close();
+		evalbOut.close();
 		// grammarIn.close();
 	}
 

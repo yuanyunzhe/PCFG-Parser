@@ -63,9 +63,15 @@ public:
 	}
 
 	void inOrderTraversal(ParseTreeNode *node, vector<string> &words){
-		if (node->left == NULL) words.push_back(node->terminal);
+		if (node->left == NULL){
+			words.push_back("(");
+			words.push_back(node->nonTerminal);
+			words.push_back(node->terminal);
+			words.push_back(")");
+		}
 		else{
 			words.push_back("(");
+			words.push_back(node->nonTerminal);
 			inOrderTraversal(node->left, words);
 			inOrderTraversal(node->right, words);
 			words.push_back(")");
