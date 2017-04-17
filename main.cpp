@@ -50,9 +50,9 @@ int main(int argc, char const *argv[]){
 		// }
 		EM em;
 		cout<<"###"<<endl;
-		em.setNumSentences(50);
+		em.setNumSentences(15);
 		em.readParseTree(treeIn);
-		em.initializeTrainingGrammar(20);
+		em.initializeTrainingGrammar(10);
 		em.training();
 		treeIn.close();
 		// grammarIn.close();

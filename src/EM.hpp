@@ -10,6 +10,7 @@
 
 #include "Grammar.hpp"
 #include "Parsetree.hpp"
+#include "Math.hpp"
 using namespace std;
 
 #define MAX_WORDS 50
@@ -41,15 +42,13 @@ public:
 		for (int i = 0; i < numNonTerminals; i++){
 			double sum = 0;
 			for (int j = 0; j < numNonTerminals; j++)
-				if (i != j)
-					for (int k = 0; k < numNonTerminals; k++)
-						if (j != k){
-							grammar.nonTerminalProbability[i][j][k] = rand() / double(RAND_MAX);
-							sum += grammar.nonTerminalProbability[i][j][k];
-						}
+					for (int k = 0; k < numNonTerminals; k++){
+						grammar.nonTerminalProbability[i][j][k] = rand() / double(RAND_MAX);
+						sum += grammar.nonTerminalProbability[i][j][k];
+					}
 			for (int j = 0; j < grammar.numNonTerminals; j++)
 				for (int k = 0; k < grammar.numNonTerminals; k++)
-					grammar.nonTerminalProbability[i][j][k] /= sum;
+					grammar.nonTerminalProbability[i][j][k] = log(grammar.nonTerminalProbability[i][j][k] / sum);
 		}
 		for (int i = 0; i < grammar.numNonTerminals; i++){
 			double sum = 0;
@@ -57,8 +56,8 @@ public:
 				grammar.terminalProbability[i][j] = rand() / double(RAND_MAX);
 				sum += grammar.terminalProbability[i][j];
 			}
-			for (int j = 0; j < grammar.numNonTerminals; j++)
-				grammar.terminalProbability[i][j] /= sum;
+			for (int j = 0; j < grammar.numTerminals; j++)
+				grammar.terminalProbability[i][j] = log(grammar.terminalProbability[i][j] / sum);
 		}	
 	}
 
@@ -72,9 +71,9 @@ public:
 					grammar.indexTerminal[words[i][j]] = grammar.indexTerminal.size();
 		}
 	}
-	void readGrammar(ifstream &grammarIn){
-		cnf.read(grammarIn);
-	}
+	// void readGrammar(ifstream &grammarIn){
+	// 	cnf.read(grammarIn);
+	// }
 
 	void training(){
 		cout << grammar.numNonTerminals << " "<<grammar.numTerminals << endl;
@@ -107,33 +106,39 @@ public:
 	}
 
 	void calculateInsideOutside(int p){
-		memset(alpha, 0, sizeof(alpha));
-		memset(beta, 0, sizeof(beta));
+		for (int i = 0; i < grammar.numNonTerminals; i++)
+			for (int j = 0; j < grammar.numNonTerminals; j++)
+				for (int k = 0; k < grammar.numNonTerminals; k++){
+					alpha[i][j][k] = 1;
+					beta[i][j][k] = 1;
+				}
 		for (int j = 0; j < words[p].size(); j++){
 			for (int i = 0; i < grammar.numNonTerminals; i++)
 				beta[j][j][i] = grammar.terminalProbability[i][grammar.indexTerminal[words[p][j]]];
+			//cout<<beta[j][j][0]<<"~~~~"<<exp(beta[j][j][0])<<endl;
 			for (int i = j - 1; i >= 0; i--)
 				for (int k = i; k <= j - 1; k++)
 					for (int x = 0; x < grammar.numNonTerminals; x++)
 						for (int y = 0; y < grammar.numNonTerminals; y++)
-							for (int z = 0; z < grammar.numNonTerminals; z++)
-								beta[i][j][x] += grammar.nonTerminalProbability[x][y][z] * beta[i][k][x] * beta[k + 1][j][x];
+							for (int z = 0; z < grammar.numNonTerminals; z++){
+					//			cout << i <<" "<<j<< " "<<x<<" "<<beta[i][j][x]<<" "<< grammar.nonTerminalProbability[x][y][z] <<" "<< beta[i][k][x] <<" "<< beta[k + 1][j][x]<<endl;
+								beta[i][j][x] = LogarithmOfAddition(beta[i][j][x], grammar.nonTerminalProbability[x][y][z] + beta[i][k][x] + beta[k + 1][j][x]);
+							}
 		}
-		alpha[0][words[p].size() - 1][0] = 1;
+		alpha[0][words[p].size() - 1][0] = 0;
 		for (int j = 0; j < words[p].size(); j++)
 			for (int i = 0; i <= j; i++){
 				for (int k = 0; k < i; k++)
 					for (int x = 0; x < grammar.numNonTerminals; x++)
 						for (int y = 0; y < grammar.numNonTerminals; y++)
 							for (int z = 0; z < grammar.numNonTerminals; z++)
-								alpha[i][j][y] += grammar.nonTerminalProbability[x][y][z] * alpha[i][k][x] * beta[k + 1][j][z];
+								alpha[i][j][y] = LogarithmOfAddition(alpha[i][j][y], grammar.nonTerminalProbability[x][y][z] + alpha[i][k][x] + beta[k + 1][j][z]);
 				for (int k = j + 1; k < words[p].size(); k++)
 					for (int x = 0; x < grammar.numNonTerminals; x++)
 						for (int y = 0; y < grammar.numNonTerminals; y++)
 							for (int z = 0; z < grammar.numNonTerminals; z++)
-								alpha[i][j][z] += grammar.nonTerminalProbability[x][y][z] * alpha[k][j][x] * beta[k][i - 1][y];
+								alpha[i][j][z] = LogarithmOfAddition(alpha[i][j][z], grammar.nonTerminalProbability[x][y][z] + alpha[k][j][x] + beta[k][i - 1][y]);
 			}
-
 		for (int i = 0; i < words[p].size() - 1; i++)
 			for (int j = i + 1; j < words[p].size(); j++)
 				for (int k = i; k < j; k++)
@@ -141,7 +146,16 @@ public:
 						for (int y = 0; y < grammar.numNonTerminals; y++)
 							for (int z = 0; z < grammar.numNonTerminals; z++)
 								count[x][y][z] += alpha[i][j][x] * grammar.nonTerminalProbability[x][y][z] * beta[i][k][y] * beta[k + 1][j][z] / beta[0][words[p].size()][0];
-		likelihood *= beta[0][words[p].size() - 1][0];
+		likelihood += beta[0][words[p].size() - 1][0];
+		// for (int i = 0; i < grammar.numNonTerminals; i++){
+		// 	for (int j = 0; j < grammar.numNonTerminals; j++){
+		// 		for (int k = 0; k < grammar.numNonTerminals; k++)
+		// 			cout << i<<" "<<j<<" "<<k<<" "<<beta[i][j][k]<<endl;
+		// 		cout<<endl;
+		// 	}
+		// 	cout<<endl;
+		// }
+		//cout << "                  "<<beta[0][words[p].size() - 1][0]<<endl;
 	}
 	void CYK(int p){
 		memset(table, 0, sizeof(table));
@@ -153,7 +167,7 @@ public:
 					for (int x = 0; x < grammar.numNonTerminals; x++)
 						for (int y = 0; y < grammar.numNonTerminals; y++)
 							for (int z = 0; z < grammar.numNonTerminals; z++){
-								double tmp = grammar.nonTerminalProbability[x][y][z] * table[i][k][x] * table[k + 1][j][x];
+								double tmp = grammar.nonTerminalProbability[x][y][z] + table[i][k][x] + table[k + 1][j][x];
 								if (tmp > table[i][j][x]){
 									table[i][j][x] = tmp;
 									pre[i][j][x].i = i;
