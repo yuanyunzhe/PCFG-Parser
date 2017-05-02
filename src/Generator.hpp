@@ -42,7 +42,7 @@ public:
 			ParseTree *parseTree = new ParseTree("S");
 			generate(parseTree->root);
 			parseTree->reassignIndex();
-			parseTree->save(treeOut);		
+			parseTree->save(treeOut);
 			parseTree->saveToEvalbFormat(evalbOut);
 		}
 	}

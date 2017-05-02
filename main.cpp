@@ -22,7 +22,7 @@ int main(int argc, char const *argv[]){
 		treeOut.open("sentences/sentences.save");
 		evalbOut.open("sentences/sentences.gld");
 
-		Generator generator(15, emile);
+		Generator generator(20, emile);
 		generator.generateSentences(treeOut, evalbOut);
 
 		evalbOut.close();
@@ -52,9 +52,9 @@ int main(int argc, char const *argv[]){
 		evalbOut.open("sentences/sentences_out.gld");
 		EM em;
 		cout<<"###"<<endl;
-		em.setNumSentences(15);
+		em.setNumSentences(20);
 		em.readParseTree(treeIn);
-		em.initializeTrainingGrammar(20);
+		em.initializeTrainingGrammar(5);
 		em.training();
 		em.predicting(evalbOut);
 		treeIn.close();

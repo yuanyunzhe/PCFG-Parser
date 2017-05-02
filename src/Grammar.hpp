@@ -12,6 +12,7 @@
 #include <cmath>
 
 #include "Rule.hpp"
+#include "Math.hpp"
 
 using namespace std;
 
@@ -81,14 +82,17 @@ public:
 	}
 };
 
-#define MAX_NON_TERMINALS 50
-#define MAX_TERMINALS 50
+#define MAX_NON_TERMINALS 30
+#define MAX_TERMINALS 30
 
 class TrainingGrammar{
 public:
 	int numNonTerminals, numTerminals;
 	double nonTerminalProbability[MAX_NON_TERMINALS][MAX_NON_TERMINALS][MAX_NON_TERMINALS];
 	double terminalProbability[MAX_NON_TERMINALS][MAX_TERMINALS];
+	LogDouble LogNonTerminalProbability[MAX_NON_TERMINALS][MAX_NON_TERMINALS][MAX_NON_TERMINALS];
+	LogDouble LogTerminalProbability[MAX_NON_TERMINALS][MAX_TERMINALS];
+	
 	TrainingGrammar(int numNonTerminals, int numTerminals){
 		this->numNonTerminals = numNonTerminals;
 		this->numTerminals = numTerminals;
