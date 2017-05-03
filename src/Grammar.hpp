@@ -13,6 +13,7 @@
 
 #include "Rule.hpp"
 #include "Math.hpp"
+#include "Structure.hpp"
 
 using namespace std;
 
@@ -82,25 +83,29 @@ public:
 	}
 };
 
-#define MAX_NON_TERMINALS 30
-#define MAX_TERMINALS 30
+#define MAX_NON_TERMINALS 500
+#define MAX_TERMINALS 300
 
 class TrainingGrammar{
 public:
 	int numNonTerminals, numTerminals;
-	double nonTerminalProbability[MAX_NON_TERMINALS][MAX_NON_TERMINALS][MAX_NON_TERMINALS];
-	double terminalProbability[MAX_NON_TERMINALS][MAX_TERMINALS];
-	LogDouble LogNonTerminalProbability[MAX_NON_TERMINALS][MAX_NON_TERMINALS][MAX_NON_TERMINALS];
-	LogDouble LogTerminalProbability[MAX_NON_TERMINALS][MAX_TERMINALS];
+	map<string, int> indexTerminal;
+	double ***nonTerminalProbability, **terminalProbability;
+	LogDouble ***LogNonTerminalProbability, **LogTerminalProbability;
 	
 	TrainingGrammar(int numNonTerminals, int numTerminals){
 		this->numNonTerminals = numNonTerminals;
 		this->numTerminals = numTerminals;
+		malloc(&nonTerminalProbability, MAX_NON_TERMINALS, MAX_NON_TERMINALS, MAX_NON_TERMINALS);
+		malloc(&terminalProbability, MAX_NON_TERMINALS, MAX_TERMINALS);
+		malloc(&LogNonTerminalProbability, MAX_NON_TERMINALS, MAX_NON_TERMINALS, MAX_NON_TERMINALS);
+		malloc(&LogTerminalProbability, MAX_NON_TERMINALS, MAX_TERMINALS);
 	}
-	map<string, int> indexTerminal;
 	TrainingGrammar(){
-		memset(nonTerminalProbability, 0, sizeof(nonTerminalProbability));
-		memset(terminalProbability, 0, sizeof(terminalProbability));
+		malloc(&nonTerminalProbability, MAX_NON_TERMINALS, MAX_NON_TERMINALS, MAX_NON_TERMINALS);
+		malloc(&terminalProbability, MAX_NON_TERMINALS, MAX_TERMINALS);
+		malloc(&LogNonTerminalProbability, MAX_NON_TERMINALS, MAX_NON_TERMINALS, MAX_NON_TERMINALS);
+		malloc(&LogTerminalProbability, MAX_NON_TERMINALS, MAX_TERMINALS);
 	}
 };
 
