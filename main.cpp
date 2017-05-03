@@ -6,6 +6,11 @@
 #include "src/EM.hpp"
 #include "src/Generator.hpp"
 
+#define NUM_TRAINING 500
+#define NUM_TEST 100
+#define NUM_NONTERMINALS 10
+#define MAX_TRAINING_TIMES 100
+
 using namespace std;
 
 int main(int argc, char const *argv[]){
@@ -16,63 +21,38 @@ int main(int argc, char const *argv[]){
 		emile.read(grammarIn);
 		grammarIn.close();
 
-		ifstream treeIn;
-		ofstream treeOut, evalbOut;
+		ofstream treeOutTraining, evalbOutTraining, treeOutTest, evalbOutTest;
 
-		treeOut.open("sentences/sentences.save");
-		evalbOut.open("sentences/sentences.gld");
+		treeOutTraining.open("sentences/sentences_training.save");
+		evalbOutTraining.open("sentences/sentences_training.gld");
+		treeOutTest.open("sentences/sentences_test.save");
+		evalbOutTest.open("sentences/sentences_test.gld");
 
-		Generator generator(20, emile);
-		generator.generateSentences(treeOut, evalbOut);
+		Generator generatorTraining(NUM_TRAINING, emile), generatorTest(NUM_TEST, emile);
+		generatorTraining.generateSentences(treeOutTraining, evalbOutTraining);
+		generatorTest.generateSentences(treeOutTest, evalbOutTest);
 
-		evalbOut.close();
-		treeOut.close();
+		treeOutTraining.close();
+		evalbOutTraining.close();
+		treeOutTest.close();
+		evalbOutTest.close();
+		
 	}
 	else if ((string)argv[1] == "-t"){
-		// CNF emile;
-		// ifstream grammarIn;
-		// grammarIn.open("grammar/emile.cnf");
-		// emile.read(grammarIn);
-		// grammarIn.close();
-				ifstream treeIn;
-		// ofstream treeOut, evalbOut;
-		treeIn.open("sentences/sentences.save");
-		// grammarIn.open("grammar/emile.cnf");
-
-		// ofstream lalala;
-		// lalala.open("sentences/lalala.save");
-		// for (int i = 0; i < 50; i++){
-		// 	cout << "The " << i << "-th sentence:" << endl;
-		// 	Sentence sentence(treeIn, emile);
-		// 	cout << "Length: " << sentence.words.size() << endl;
-		// 	sentence.emTraining(lalala);
-		// 	cout << endl;
-		// }
+		ifstream treeInTraining, treeInTest;
 		ofstream evalbOut;
+		treeInTraining.open("sentences/sentences_training.save");
+		treeInTest.open("sentences/sentences_test.save");
 		evalbOut.open("sentences/sentences_out.gld");
 		EM em;
-		cout<<"###"<<endl;
-		em.setNumSentences(20);
-		em.readParseTree(treeIn);
-		em.initializeTrainingGrammar(5);
-		em.training();
+		em.setNumSentences(NUM_TRAINING, NUM_TEST);
+		em.readParseTree(treeInTraining, NUM_TRAINING);
+		em.initializeTrainingGrammar(NUM_NONTERMINALS);
+		em.training(MAX_TRAINING_TIMES);
+		em.readParseTree(treeInTest, NUM_TEST);
 		em.predicting(evalbOut);
-		treeIn.close();
+		treeInTraining.close();
 		evalbOut.close();
-		// grammarIn.close();
 	}
-
-
-	// treeIn.open("sentences/sentences.save");
-	// treeOut.open("sentences/sentences2.save");
-	// for (int i = 0; i < 100; i++){
-		
-	// 	ParseTree *a = new ParseTree;
-	// 	a->load(treeIn);
-	// 	a->save(treeOut);
-	// 	delete a;
-	// }
-	// treeIn.close();
-	// treeOut.close();
 	return 0;
 }
