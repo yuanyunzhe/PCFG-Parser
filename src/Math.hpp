@@ -52,7 +52,7 @@ public:
 LogDouble LogarithmOfAddition(LogDouble a, LogDouble b){
     if (a.get() == LOG_ZERO) return b;
     if (b.get() == LOG_ZERO) return a;
-    if (a.get() < b.get()) return LogarithmOfAddition(b, a);
+    // if (a.get() < b.get()) return LogarithmOfAddition(b, a);
     // cout<<"!"<<(b - a).get()<<endl;
     return LogDouble(a.get() + log(1 + exp((b - a).get())));
 }

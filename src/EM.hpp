@@ -12,10 +12,9 @@
 #include "Parsetree.hpp"
 #include "Math.hpp"
 #include "Structure.hpp"
-using namespace std;
+#include "Parameter.hpp"
 
-#define MAX_WORDS 200
-#define MAX_SENTENCES 500
+using namespace std;
 
 class EM{
 public:
@@ -27,7 +26,13 @@ public:
 	Previous ***record;
 	int numSentencesTraining, numSentencesTest;
 	LogDouble likelihood;
-	EM(){;}
+	ifstream *treeInTraining, *treeInTest;
+	ofstream *evalbOut;
+	EM(ifstream &treeInTraining, ifstream &treeInTest, ofstream &evalbOut){
+		this->treeInTraining = &treeInTraining;
+		this->treeInTest = &treeInTest;
+		this->evalbOut = &evalbOut;
+	}
 	void setNumSentences(int numSentencesTraining, int numSentencesTest){
 		this->numSentencesTraining = numSentencesTraining;
 		this->numSentencesTest = numSentencesTest;
@@ -62,11 +67,14 @@ public:
 		}
 	}
 
-	void readParseTree(ifstream &treeIn, int num){
+	void readParseTree(int num, string s){
+		ifstream *treeIn;
+		if (s == "training") treeIn = treeInTraining;
+		else treeIn = treeInTest;
 		for (int i = 0; i < num; i++){
 			words[i].clear();
 			parseTree = new ParseTree;
-			parseTree->load(treeIn);
+			parseTree->load(*treeIn);
 			parseTree->preOrderTraversal(parseTree->root, words[i]);
 			for (int j = 0; j < words[i].size(); j++)
 				if (grammar.indexTerminal.find(words[i][j]) == grammar.indexTerminal.end())
@@ -75,50 +83,54 @@ public:
 	}
 
 	void training(int times){
-		for (int i = 0; i < times; i++){
-			cout << i << endl;
+		for (int i = 1; i <= times; i++){
 			expection();
 			maximization();
-			printf("      %.50Lf\n", likelihood.get());
-			if (abs(beta[0][words[i].size() - 1][0].get()) < 1e-10) break;
+			printf("The %d-th training: the logarithm of the likelihood is %.50Lf\n", i, likelihood.get());
+			// if (abs(beta[0][words[i].size() - 1][0].get()) < 1e-10) break;
+			// readParseTree(NUM_TEST, "test");
+			predicting();
+			system("include/EVALB/evalb -p sentences/io.prm sentences/sentences_test.gld sentences/sentences_out.gld >> fscore");
 		}
 	}
 
-	void predicting(ofstream &evalbOut){
+	void predicting(){
+		evalbOut->open(EVALB_OUT_PREDICT_NAME);
 		for (int i = 0; i < numSentencesTest; i++){
 			CYK(i);
 			parseTree = buildParseTree(i);
-			parseTree->saveToEvalbFormat(evalbOut);
+			parseTree->saveToEvalbFormat(*evalbOut);
 		}
+		evalbOut->close();
 	}
 
 	void expection(){
-	for (int i = 0; i < grammar.numNonTerminals; i++)
-		for (int j = 0; j < grammar.numNonTerminals; j++)
-			for (int k = 0; k < grammar.numNonTerminals; k++)
-				count[i][j][k].init();
-	for (int i = 0; i < grammar.numNonTerminals; i++)
-		for (int j = 0; j < grammar.numTerminals; j++)
-				countNon[i][j].init();
+		for (int i = 0; i < grammar.numNonTerminals; i++)
+			for (int j = 0; j < grammar.numNonTerminals; j++)
+				for (int k = 0; k < grammar.numNonTerminals; k++)
+					count[i][j][k].init();
+		for (int i = 0; i < grammar.numNonTerminals; i++)
+			for (int j = 0; j < grammar.numTerminals; j++)
+					countNon[i][j].init();
 		likelihood = 0;
-		for (int i = 0; i < numSentencesTraining - 2; i++){
+		for (int i = 0; i < numSentencesTraining; i++){
 			calculateInsideOutside(i);
 			
 		}
 	}
 	void maximization(){
 		for (int x = 0; x < grammar.numNonTerminals; x++){
-			LogDouble tmp;
+			LogDouble tmp1, tmp2;
 			for (int y = 0; y < grammar.numNonTerminals; y++)
 				for (int z = 0; z < grammar.numNonTerminals; z++)
-					tmp = LogarithmOfAddition(tmp, count[x][y][z]);
+					tmp1 = LogarithmOfAddition(tmp1, count[x][y][z]);
 			for (int y = 0; y < grammar.numTerminals; y++)
-					tmp = LogarithmOfAddition(tmp, countNon[x][y]);
+					tmp2 = LogarithmOfAddition(tmp2, countNon[x][y]);
 			for (int y = 0; y < grammar.numNonTerminals; y++)
 				for (int z = 0; z < grammar.numNonTerminals; z++)
-					grammar.LogNonTerminalProbability[x][y][z] = count[x][y][z] - tmp;
+					grammar.LogNonTerminalProbability[x][y][z] = count[x][y][z] - tmp1;
 			for (int y = 0; y < grammar.numTerminals; y++)
-				grammar.LogTerminalProbability[x][y] = countNon[x][y] - tmp;
+				grammar.LogTerminalProbability[x][y] = countNon[x][y] - tmp2;
 		}
 	}
 
@@ -161,7 +173,7 @@ public:
 						for (int y = 0; y < grammar.numNonTerminals; y++)
 							for (int z = 0; z < grammar.numNonTerminals; z++)
 								count[x][y][z] = LogarithmOfAddition(count[x][y][z], alpha[i][j][x] + grammar.LogNonTerminalProbability[x][y][z] + beta[i][k][y] + beta[k + 1][j][z] - beta[0][words[p].size() - 1][0]);
-		for (int i = 0; i < words[p].size() - 1; i++)
+		for (int i = 0; i < words[p].size(); i++)
 			for (int x = 0; x < grammar.numNonTerminals; x++)
 				for (int y = 0; y < grammar.numTerminals; y++)
 					countNon[x][y] = LogarithmOfAddition(countNon[x][y], alpha[i][i][x] + grammar.LogTerminalProbability[x][y] + beta[i][i][x] - beta[0][words[p].size() - 1][0]);
@@ -172,9 +184,10 @@ public:
 			for (int j = 0; j < words[p].size(); j++)
 				for (int k = 0; k < grammar.numNonTerminals; k++)
 					table[i][j][k] = LOG_ZERO;
+
 		for (int j = 0; j < words[p].size(); j++)
 			for (int i = 0; i < grammar.numNonTerminals; i++)
-				table[j][j][i] = grammar.terminalProbability[i][grammar.indexTerminal[words[p][j]]];
+				table[j][j][i] = grammar.LogTerminalProbability[i][grammar.indexTerminal[words[p][j]]];
 		for (int j = 0; j < words[p].size(); j++)
 			for (int i = j - 1; i >= 0; i--)
 				for (int k = i; k <= j - 1; k++)
@@ -192,6 +205,15 @@ public:
 										record[i][j][x].z = z;
 									}
 						}
+		// for (int i = 0; i < words[p].size(); i++){
+		// 	for (int j = 0; j < words[p].size(); j++){
+		// 		for (int x = 0; x < grammar.numNonTerminals; x++){
+		// 			cout << table[i][j][x].get() << " ";
+		// 		}
+		// 		cout << endl;
+		// 	}
+		// 	cout << endl;
+		// }
 }
 
 	void buildParseTree(int p, ParseTreeNode* node, int i, int j, int x){

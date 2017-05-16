@@ -5,11 +5,7 @@
 #include "src/Grammar.hpp"
 #include "src/EM.hpp"
 #include "src/Generator.hpp"
-
-#define NUM_TRAINING 500
-#define NUM_TEST 100
-#define NUM_NONTERMINALS 10
-#define MAX_TRAINING_TIMES 100
+#include "src/Parameter.hpp"
 
 using namespace std;
 
@@ -23,10 +19,10 @@ int main(int argc, char const *argv[]){
 
 		ofstream treeOutTraining, evalbOutTraining, treeOutTest, evalbOutTest;
 
-		treeOutTraining.open("sentences/sentences_training.save");
-		evalbOutTraining.open("sentences/sentences_training.gld");
-		treeOutTest.open("sentences/sentences_test.save");
-		evalbOutTest.open("sentences/sentences_test.gld");
+		treeOutTraining.open(TRAINING_NAME);
+		evalbOutTraining.open(EVALB_OUT_TRAINING_NAME);
+		treeOutTest.open(TEST_NAME);
+		evalbOutTest.open(EVALB_OUT_TEST_NAME);
 
 		Generator generatorTraining(NUM_TRAINING, emile), generatorTest(NUM_TEST, emile);
 		generatorTraining.generateSentences(treeOutTraining, evalbOutTraining);
@@ -41,18 +37,18 @@ int main(int argc, char const *argv[]){
 	else if ((string)argv[1] == "-t"){
 		ifstream treeInTraining, treeInTest;
 		ofstream evalbOut;
-		treeInTraining.open("sentences/sentences_training.save");
-		treeInTest.open("sentences/sentences_test.save");
-		evalbOut.open("sentences/sentences_out.gld");
-		EM em;
+		treeInTraining.open(TRAINING_NAME);
+		treeInTest.open(TEST_NAME);
+		
+		EM em(treeInTraining, treeInTest, evalbOut);
 		em.setNumSentences(NUM_TRAINING, NUM_TEST);
-		em.readParseTree(treeInTraining, NUM_TRAINING);
+		em.readParseTree(NUM_TRAINING, "training");
 		em.initializeTrainingGrammar(NUM_NONTERMINALS);
 		em.training(MAX_TRAINING_TIMES);
-		em.readParseTree(treeInTest, NUM_TEST);
-		em.predicting(evalbOut);
+		em.readParseTree(NUM_TEST, "test");
+		em.predicting();
 		treeInTraining.close();
-		evalbOut.close();
+		
 	}
 	return 0;
 }

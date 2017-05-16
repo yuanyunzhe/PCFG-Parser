@@ -11,17 +11,19 @@
 
 #include "Grammar.hpp"
 #include "Parsetree.hpp"
+#include "Parameter.hpp"
 
 using namespace std;
 
 class Generator{
 private:
-	int numSentences;
+	int numSentences, numWords;
 	CNF cnf;
 	void generate(ParseTreeNode *node){
 		if (cnf.isUnary[node->nonTerminal]){
 			UnaryRule rule = cnf.randomizeUnaryRule(node->nonTerminal);
 			node->insertTerminal(rule.terminal);
+			numWords++;
 		}
 		else{
 			BinaryRule rule = cnf.randomizeBinaryRule(node->nonTerminal);
@@ -38,12 +40,17 @@ public:
 
 	void generateSentences(ofstream &treeOut, ofstream &evalbOut){
 		srand((unsigned)time(NULL));
-		for (int i = 1; i <= numSentences; i++){
+		int i = 0;
+		while (i < numSentences){
+			numWords = 0;
 			ParseTree *parseTree = new ParseTree("S");
 			generate(parseTree->root);
 			parseTree->reassignIndex();
-			parseTree->save(treeOut);
-			parseTree->saveToEvalbFormat(evalbOut);
+			if (numWords <= MAX_WORDS_IN_SENTENCE){
+				parseTree->save(treeOut);
+				parseTree->saveToEvalbFormat(evalbOut);
+				i++;
+			}
 		}
 	}
 };

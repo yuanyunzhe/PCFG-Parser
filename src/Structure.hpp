@@ -8,6 +8,7 @@ class Previous{
 public:
 	int i, j, k, x, y, z;
 };
+
 template<typename T>
 void malloc(T ****p, int x, int y, int z){
     *p = (T ***)malloc(x * sizeof(T **));

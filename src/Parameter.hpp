@@ -1,0 +1,12 @@
+#define NUM_TRAINING 100
+#define NUM_TEST 20
+#define NUM_NONTERMINALS 5
+#define MAX_TRAINING_TIMES 200
+#define MAX_WORDS 200
+#define MAX_SENTENCES 500
+#define MAX_WORDS_IN_SENTENCE 10
+#define TRAINING_NAME "sentences/sentences_training.save"
+#define TEST_NAME "sentences/sentences_test.save"
+#define EVALB_OUT_TRAINING_NAME "sentences/sentences_training.gld"
+#define EVALB_OUT_TEST_NAME "sentences/sentences_test.gld"
+#define EVALB_OUT_PREDICT_NAME "sentences/sentences_out.gld"
