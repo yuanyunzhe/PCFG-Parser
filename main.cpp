@@ -13,41 +13,49 @@ int main(int argc, char const *argv[]){
 	if ((string)argv[1] == "-g"){
 		CNF emile;
 		ifstream grammarIn;
-		grammarIn.open("grammar/emile_init.cnf");
+		grammarIn.open(GRAMMAR_NAME);
 		emile.read(grammarIn);
 		grammarIn.close();
 
-		ofstream treeOutTraining, evalbOutTraining, treeOutTest, evalbOutTest;
+		ofstream sentenceTraining, sentenceTest;
 
-		treeOutTraining.open(TRAINING_NAME);
-		evalbOutTraining.open(EVALB_OUT_TRAINING_NAME);
-		treeOutTest.open(TEST_NAME);
-		evalbOutTest.open(EVALB_OUT_TEST_NAME);
+		sentenceTraining.open(TRAINING_NAME);
+		// evalbOutTraining.open(EVALB_OUT_TRAINING_NAME);
+		sentenceTest.open(TEST_NAME);
+		// evalbOutTest.open(EVALB_OUT_TEST_NAME);
 
 		Generator generatorTraining(NUM_TRAINING, emile), generatorTest(NUM_TEST, emile);
-		generatorTraining.generateSentences(treeOutTraining, evalbOutTraining);
-		generatorTest.generateSentences(treeOutTest, evalbOutTest);
+		generatorTraining.generateSentences(sentenceTraining, 100);
+		generatorTest.generateSentences(sentenceTest, 1000);
 
-		treeOutTraining.close();
-		evalbOutTraining.close();
-		treeOutTest.close();
-		evalbOutTest.close();
+		sentenceTraining.close();
+		// evalbOutTraining.close();
+		sentenceTest.close();
+		// evalbOutTest.close();
 		
 	}
 	else if ((string)argv[1] == "-t"){
-		ifstream treeInTraining, treeInTest;
+		ifstream grammar, sentenceTraining, sentenceTest;
 		ofstream evalbOut;
-		treeInTraining.open(TRAINING_NAME);
-		treeInTest.open(TEST_NAME);
+		grammar.open(GRAMMAR_NAME);
+		sentenceTraining.open(TRAINING_NAME);
+		sentenceTest.open(TEST_NAME);
 		
-		EM em(treeInTraining, treeInTest, evalbOut);
+		EM em(grammar, sentenceTraining, sentenceTest, evalbOut);
 		em.setNumSentences(NUM_TRAINING, NUM_TEST);
 		em.readParseTree(NUM_TRAINING, "training");
-		em.initializeTrainingGrammar(NUM_NONTERMINALS);
-		em.training(MAX_TRAINING_TIMES);
 		em.readParseTree(NUM_TEST, "test");
-		em.predicting();
-		treeInTraining.close();
+		em.initializeTrainingGrammar(NUM_NONTERMINALS);
+		
+		em.predictStandardData();
+
+		em.training(MAX_TRAINING_TIMES);
+
+		// em.predicting();
+
+		grammar.close();
+		sentenceTraining.close();
+		sentenceTest.close();
 		
 	}
 	return 0;

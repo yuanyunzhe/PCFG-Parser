@@ -89,7 +89,7 @@ public:
 class TrainingGrammar{
 public:
 	int numNonTerminals, numTerminals;
-	map<string, int> indexTerminal;
+	map<string, int> indexTerminal, indexNonTerminal;
 	double ***nonTerminalProbability, **terminalProbability;
 	LogDouble ***LogNonTerminalProbability, **LogTerminalProbability;
 	

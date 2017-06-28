@@ -26,5 +26,21 @@ void malloc(T ***p, int x, int y){
         (*p)[i] = (T *)malloc(y * sizeof(T));
  }
 
+template<typename T>
+void free(T p, int x, int y, int z){
+    for (int i = 0; i < x; i++)
+        for (int j = 0; j < y; j++)
+            free(p[i][j]);
+    for (int i = 0; i < x; i++)
+            free(p[i]);      
+    free(p);
+}
+
+template<typename T>
+void free(T p, int x, int y){
+    for (int i = 0; i < x; i++)
+            free(p[i]);      
+    free(p);
+ }
 
 #endif

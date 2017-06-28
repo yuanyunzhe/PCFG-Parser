@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <cmath>
-#define LOG_ZERO 0x7fffffff
+#define LOG_ZERO (-(1.0/0))
 typedef long double ld;
 using namespace std;
 
