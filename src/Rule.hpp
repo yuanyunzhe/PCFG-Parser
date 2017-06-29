@@ -4,14 +4,16 @@
 #include <vector>
 #include <string>
 
+#include "Math.hpp"
+
 using namespace std;
 
 class UnaryRule{
 public:
 	string nonTerminal, terminal;
-	double probability;
+	ld probability;
 	UnaryRule(){;}
-	UnaryRule(string nonTerminal, string terminal, double probability){
+	UnaryRule(string nonTerminal, string terminal, ld probability){
 		this->nonTerminal = nonTerminal;
 		this->terminal = terminal;
 		this->probability = probability;
@@ -20,9 +22,9 @@ public:
 class BinaryRule{
 public:
 	string nonTerminalParent, nonTerminalLeft, nonTerminalRight;
-	double probability;
+	ld probability;
 	BinaryRule(){;}
-	BinaryRule(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, double probability){
+	BinaryRule(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, ld probability){
 		this->nonTerminalParent = nonTerminalParent;
 		this->nonTerminalLeft = nonTerminalLeft;
 		this->nonTerminalRight = nonTerminalRight;

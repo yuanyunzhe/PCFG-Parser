@@ -24,17 +24,17 @@ public:
 
 	map<string, bool> isUnary;
 	
-	void addUnary(string nonTerminal, string terminal, double probability){
+	void addUnary(string nonTerminal, string terminal, ld probability){
 		unaryRules.push_back(UnaryRule(nonTerminal, terminal, probability));
 		isUnary.insert(pair<string, bool>(unaryRules.back().nonTerminal, true));
 	}
-	void addBinary(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, double probability){
+	void addBinary(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, ld probability){
 		binaryRules.push_back(BinaryRule(nonTerminalParent, nonTerminalLeft, nonTerminalRight, probability));
 		isUnary.insert(pair<string, bool>(binaryRules.back().nonTerminalParent, false));
 	}
 
 	UnaryRule randomizeUnaryRule(string nonTerminal){
-		double randomProbability = rand() / double(RAND_MAX);
+		ld randomProbability = rand() / ld(RAND_MAX);
 		vector<UnaryRule>::iterator iter;
 		UnaryRule rule;
 		for (iter = unaryRules.begin(); iter != unaryRules.end(); iter++)
@@ -45,7 +45,7 @@ public:
 		return *iter;
 	}
 	BinaryRule randomizeBinaryRule(string nonTerminal){
-		double randomProbability = rand() / double(RAND_MAX);
+		ld randomProbability = rand() / ld(RAND_MAX);
 		vector<BinaryRule>::iterator iter;
 		BinaryRule rule;
 		for (iter = binaryRules.begin(); iter != binaryRules.end(); iter++)
@@ -60,7 +60,7 @@ public:
 	void generalizeProbability(){
 		vector<UnaryRule>::iterator iterUnary;
 		vector<BinaryRule>::iterator iterBinary;
-		map<string, double> generalizationUnary, generalizationBinary;
+		map<string, ld> generalizationUnary, generalizationBinary;
 		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)
 			generalizationUnary[iterUnary->nonTerminal] += iterUnary->probability;
 		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++)
@@ -74,7 +74,7 @@ public:
 	void read(ifstream &grammarIn){
 		while (!grammarIn.eof()){
 			string s1, s2, s3;
-			double p;
+			ld p;
 			grammarIn >> s1 >> p >> s2 >> s3;
 			if (s2 == ".") addUnary(s1, s3, p);
 			else addBinary(s1, s2, s3, p);
@@ -90,7 +90,7 @@ class TrainingGrammar{
 public:
 	int numNonTerminals, numTerminals;
 	map<string, int> indexTerminal, indexNonTerminal;
-	double ***nonTerminalProbability, **terminalProbability;
+	ld ***nonTerminalProbability, **terminalProbability;
 	LogDouble ***LogNonTerminalProbability, **LogTerminalProbability;
 	
 	TrainingGrammar(int numNonTerminals, int numTerminals){

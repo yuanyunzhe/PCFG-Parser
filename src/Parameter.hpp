@@ -1,11 +1,11 @@
-#define NUM_TRAINING 10
-#define NUM_TEST 1
+#define NUM_TRAINING 2000
+#define NUM_TEST 500
 #define NUM_NONTERMINALS 10
-#define MAX_TRAINING_TIMES 500
+#define MAX_TRAINING_TIMES 100
 #define MAX_WORDS 20
-#define MAX_SENTENCES 100
+#define MAX_SENTENCES 10000
 #define MAX_WORDS_IN_SENTENCE 10
-#define GRAMMAR_NAME "grammar/test.cnf"
+#define GRAMMAR_NAME "grammar/emile_init.cnf"
 #define TRAINING_NAME "sentences/training.yld"
 #define TEST_NAME "sentences/test.yld"
 #define EVALB_OUT_TEST_NAME "sentences/test.gld"
