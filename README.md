@@ -1,2 +1,2 @@
 # PCFG-Parser
-This is a PCFG Parser based on CNF using the inside-outside algorithm.
+This is a PCFG Parser based on CNF using the inside-outside algorithm. This is a sequential version and I will rewrite it into a parallel version in the future. I use an artificial grammar called EMILE to generate the training and the test set.
