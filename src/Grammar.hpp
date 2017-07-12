@@ -22,15 +22,17 @@ public:
 	vector<UnaryRule> unaryRules;
 	vector<BinaryRule> binaryRules;
 
-	map<string, bool> isUnary;
+	map<string, ld> isUnary, isBinary;
 	
 	void addUnary(string nonTerminal, string terminal, ld probability){
 		unaryRules.push_back(UnaryRule(nonTerminal, terminal, probability));
-		isUnary.insert(pair<string, bool>(unaryRules.back().nonTerminal, true));
+		if (isUnary.find(nonTerminal) != isUnary.end()) isUnary[nonTerminal] = probability;
+		else isUnary[nonTerminal] += probability;
 	}
 	void addBinary(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, ld probability){
 		binaryRules.push_back(BinaryRule(nonTerminalParent, nonTerminalLeft, nonTerminalRight, probability));
-		isUnary.insert(pair<string, bool>(binaryRules.back().nonTerminalParent, false));
+		if (isBinary.find(nonTerminalParent) != isBinary.end()) isBinary[nonTerminalParent] = probability;
+		else isBinary[nonTerminalParent] += probability;
 	}
 
 	UnaryRule randomizeUnaryRule(string nonTerminal){
@@ -39,7 +41,7 @@ public:
 		UnaryRule rule;
 		for (iter = unaryRules.begin(); iter != unaryRules.end(); iter++)
 			if (iter->nonTerminal == nonTerminal){
-				randomProbability -= iter->probability;
+				randomProbability -= iter->gen;
 				if (randomProbability <= 0.0000001) break;
 			}
 		return *iter;
@@ -50,25 +52,33 @@ public:
 		BinaryRule rule;
 		for (iter = binaryRules.begin(); iter != binaryRules.end(); iter++)
 			if (iter->nonTerminalParent == nonTerminal){
-				randomProbability -= iter->probability;
+				randomProbability -= iter->gen;
 				if (randomProbability <= 0.0000001)
 					break;
 			}
 		return *iter;
 	}
 
-	void generalizeProbability(){
+	void normalizeProbability(){
 		vector<UnaryRule>::iterator iterUnary;
 		vector<BinaryRule>::iterator iterBinary;
-		map<string, ld> generalizationUnary, generalizationBinary;
-		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)
-			generalizationUnary[iterUnary->nonTerminal] += iterUnary->probability;
-		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++)
-			generalizationBinary[iterBinary->nonTerminalParent] += iterBinary->probability;
-		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++)
-			iterUnary->probability /= generalizationUnary[iterUnary->nonTerminal];
-		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++)
-			iterBinary->probability /= generalizationBinary[iterBinary->nonTerminalParent];
+		map<string, ld> normalization, normalizationUnary, normalizationBinary;
+		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++){
+			normalizationUnary[iterUnary->nonTerminal] += iterUnary->probability;
+			normalization[iterUnary->nonTerminal] += iterUnary->probability;
+		}
+		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++){
+			normalizationBinary[iterBinary->nonTerminalParent] += iterBinary->probability;
+			normalization[iterBinary->nonTerminalParent] += iterBinary->probability;
+		}
+		for (iterUnary = unaryRules.begin(); iterUnary != unaryRules.end(); iterUnary++){
+			iterUnary->gen = iterUnary->probability / normalizationUnary[iterUnary->nonTerminal];
+			iterUnary->probability /= normalization[iterUnary->nonTerminal];
+		}
+		for (iterBinary = binaryRules.begin(); iterBinary != binaryRules.end(); iterBinary++){
+			iterBinary->gen = iterBinary->probability / normalizationBinary[iterBinary->nonTerminalParent];
+			iterBinary->probability /= normalization[iterBinary->nonTerminalParent];
+		}
 	}
 
 	void read(ifstream &grammarIn){
@@ -79,7 +89,7 @@ public:
 			if (s2 == ".") addUnary(s1, s3, p);
 			else addBinary(s1, s2, s3, p);
 		}
-		generalizeProbability();
+		normalizeProbability();
 	}
 };
 

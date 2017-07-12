@@ -11,7 +11,7 @@ using namespace std;
 class UnaryRule{
 public:
 	string nonTerminal, terminal;
-	ld probability;
+	ld probability, gen;
 	UnaryRule(){;}
 	UnaryRule(string nonTerminal, string terminal, ld probability){
 		this->nonTerminal = nonTerminal;
@@ -22,7 +22,7 @@ public:
 class BinaryRule{
 public:
 	string nonTerminalParent, nonTerminalLeft, nonTerminalRight;
-	ld probability;
+	ld probability, gen;
 	BinaryRule(){;}
 	BinaryRule(string nonTerminalParent, string nonTerminalLeft, string nonTerminalRight, ld probability){
 		this->nonTerminalParent = nonTerminalParent;

@@ -1,6 +1,8 @@
 #include <iostream>
 
 #include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 #include "src/Grammar.hpp"
 #include "src/EM.hpp"
@@ -10,6 +12,9 @@
 using namespace std;
 
 int main(int argc, char const *argv[]){
+	// srand((unsigned)time(NULL));
+	srand((unsigned)0);
+	
 	if ((string)argv[1] == "-g"){
 		CNF emile;
 		ifstream grammarIn;
